@@ -49,11 +49,15 @@ fi
 echo "Installiere requirements..."
 "$PIP" install -r "$ROOT/requirements.txt"
 
+cd "$ROOT/SyncSession"
+
+echo "Datenbank vorbereiten..."
+"$PYTHON" manage.py migrate --noinput
+
 free_port
 
 printf '\nApp starten:\n'
 printf '\033]8;;%s\033\\%s\033]8;;\033\\\n' "$URL" "$URL"
 printf '%s:%s\n\n' "$HOST" "$PORT"
 
-cd "$ROOT/SyncSession"
 exec "$PYTHON" manage.py runserver "${HOST}:${PORT}"
