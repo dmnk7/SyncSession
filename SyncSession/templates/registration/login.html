@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Einloggen · SyncSession{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h1>Einloggen</h1>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Einloggen</button>
+    </form>
+    <p class="hint">Noch kein Konto? <a href="{% url 'landing' %}">Konto erstellen</a></p>
+  </section>
+{% endblock %}

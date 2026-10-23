@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Start · SyncSession{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h1>Hallo {{ user.get_full_name|default:user.username }}</h1>
+    <p>Angemeldet als <strong>{{ user.username }}</strong>.</p>
+  </section>
+{% endblock %}

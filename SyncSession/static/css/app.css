@@ -1,0 +1,135 @@
+:root {
+  --bg: #f3efe6;
+  --card: #fffdf8;
+  --text: #1f1b16;
+  --muted: #5c554c;
+  --line: #ddd4c6;
+  --accent: #215544;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+.brand {
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+nav a {
+  color: var(--accent);
+}
+
+nav form,
+nav button {
+  margin: 0;
+}
+
+nav button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+}
+
+.page {
+  max-width: 28rem;
+  margin: 3rem auto;
+  padding: 0 1rem 3rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+h1 {
+  margin: 0 0 0.4rem;
+  font-size: 1.5rem;
+}
+
+p,
+.hint {
+  color: var(--muted);
+}
+
+form p {
+  margin: 0.85rem 0;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+}
+
+button[type="submit"] {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.errorlist {
+  margin: 0.3rem 0;
+  padding-left: 1.1rem;
+  color: #9f1d1d;
+}
+
+.messages {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  list-style: none;
+  background: #e7f3ec;
+  border-radius: 8px;
+}
+
+.helptext {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}

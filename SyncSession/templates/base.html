@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}SyncSession{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'landing' %}{% endif %}">SyncSession</a>
+      <nav>
+        {% if user.is_authenticated %}
+          <span>{{ user.get_full_name|default:user.username }}</span>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Abmelden</button>
+          </form>
+        {% else %}
+          <a href="{% url 'landing' %}">Konto erstellen</a>
+          <a href="{% url 'login' %}">Einloggen</a>
+        {% endif %}
+      </nav>
+    </header>
+
+    <main class="page">
+      {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

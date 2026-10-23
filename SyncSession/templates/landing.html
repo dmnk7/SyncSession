@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Konto erstellen · SyncSession{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h1>Konto erstellen</h1>
+    <p>Vor- und Nachname sind nur die Anzeige in der App. Zum Anmelden brauchst du Benutzername und Passwort.</p>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Registrieren</button>
+    </form>
+    <p class="hint">Schon ein Konto? <a href="{% url 'login' %}">Einloggen</a></p>
+  </section>
+{% endblock %}
