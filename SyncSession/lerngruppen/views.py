@@ -1,5 +1,8 @@
 import io
 import secrets
+import socket
+import subprocess
+from urllib.parse import urlsplit, urlunsplit
 
 import qrcode
 import qrcode.image.svg
@@ -22,6 +25,45 @@ def _require_member(request, group):
         f"Du gehörst nicht mehr zur Lerngruppe „{group.name}“.",
     )
     return redirect("home")
+
+
+def _lan_ip():
+    for iface in ("en0", "en1"):
+        try:
+            ip = subprocess.check_output(
+                ["ipconfig", "getifaddr", iface],
+                stderr=subprocess.DEVNULL,
+                text=True,
+            ).strip()
+        except (OSError, subprocess.CalledProcessError):
+            continue
+        if ip:
+            return ip
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.connect(("8.8.8.8", 80))
+        ip = sock.getsockname()[0]
+        if ip and not ip.startswith("127."):
+            return ip
+    except OSError:
+        pass
+    finally:
+        sock.close()
+    return ""
+
+
+def _shareable_url(request, path):
+    url = request.build_absolute_uri(path)
+    parts = urlsplit(url)
+    if parts.hostname in {"127.0.0.1", "localhost", "0.0.0.0", "::1"}:
+        lan_ip = _lan_ip()
+        if lan_ip:
+            netloc = f"{lan_ip}:{parts.port}" if parts.port else lan_ip
+            url = urlunsplit(
+                (parts.scheme, netloc, parts.path, parts.query, parts.fragment)
+            )
+    return url
 
 
 def _qr_svg(url):
@@ -164,7 +206,7 @@ def invite_detail(request, pk, invite_id):
         return HttpResponseForbidden("Du darfst Einladungen dieser Gruppe nicht sehen.")
 
     invite = get_object_or_404(Invite, pk=invite_id, group=group)
-    join_url = request.build_absolute_uri(reverse("join", args=[invite.token]))
+    join_url = _shareable_url(request, reverse("join", args=[invite.token]))
     return render(
         request,
         "lerngruppen/invite.html",

@@ -7,9 +7,9 @@ cd "$ROOT"
 VENV="$ROOT/venv"
 PYTHON="$VENV/bin/python"
 PIP="$VENV/bin/pip"
-HOST="${HOST:-127.0.0.1}"
+HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-6767}"
-URL="http://${HOST}:${PORT}"
+LAN_IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || true)"
 
 free_port() {
   local pids
@@ -57,7 +57,13 @@ echo "Datenbank vorbereiten..."
 free_port
 
 printf '\nApp starten:\n'
-printf '\033]8;;%s\033\\%s\033]8;;\033\\\n' "$URL" "$URL"
-printf '%s:%s\n\n' "$HOST" "$PORT"
+print_url() {
+  printf '\033]8;;%s\033\\%s\033]8;;\033\\\n' "$1" "$1"
+}
+print_url "http://127.0.0.1:${PORT}"
+if [[ -n "$LAN_IP" ]]; then
+  print_url "http://${LAN_IP}:${PORT}"
+fi
+printf 'gebunden an %s:%s\n\n' "$HOST" "$PORT"
 
 exec "$PYTHON" manage.py runserver "${HOST}:${PORT}"
