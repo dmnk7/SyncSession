@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Einladen · {{ group.name }}{% endblock %}
+{% block page_class %}wide{% endblock %}
+
+{% block content %}
+  <p class="hint"><a href="{% url 'group_detail' group.pk %}">Zurück zur Gruppe</a></p>
+  <section class="card">
+    <h1>Einladung zu {{ group.name }}</h1>
+    <p>Der Link ist 48 Stunden gültig und kann von mehreren Personen genutzt werden.</p>
+    {% if invite.is_expired %}
+      <p class="error-text">Dieser Link ist abgelaufen. Erzeuge einen neuen.</p>
+    {% else %}
+      <p>Gültig bis {{ invite.expires_at|date:"d.m.Y H:i" }}.</p>
+      <label for="join-url">Link</label>
+      <div class="link-row">
+        <input id="join-url" type="text" value="{{ join_url }}" readonly>
+        <button type="button" class="copy-button" id="copy-link">Kopieren</button>
+      </div>
+      <div class="qr-wrap">
+        <div class="qr">
+          {{ qr_svg|safe }}
+        </div>
+      </div>
+    {% endif %}
+  </section>
+  <script>
+    document.getElementById("copy-link")?.addEventListener("click", async function () {
+      const input = document.getElementById("join-url");
+      const button = this;
+      try {
+        await navigator.clipboard.writeText(input.value);
+      } catch {
+        input.select();
+        document.execCommand("copy");
+      }
+      button.textContent = "Kopiert";
+      setTimeout(function () { button.textContent = "Kopieren"; }, 1500);
+    });
+  </script>
+{% endblock %}

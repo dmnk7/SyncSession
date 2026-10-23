@@ -24,15 +24,48 @@
       </nav>
     </header>
 
-    <main class="page">
+    <main class="page {% block page_class %}{% endblock %}">
       {% if messages %}
         <ul class="messages">
           {% for message in messages %}
-            <li>{{ message }}</li>
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
           {% endfor %}
         </ul>
       {% endif %}
       {% block content %}{% endblock %}
     </main>
+    <dialog class="confirm-dialog" id="confirm-dialog">
+      <div class="confirm-box">
+        <p id="confirm-message"></p>
+        <form method="dialog" class="confirm-actions">
+          <button value="cancel" class="confirm-cancel">Abbrechen</button>
+          <button value="ok" class="confirm-ok">Ja</button>
+        </form>
+      </div>
+    </dialog>
+    <script>
+      (function () {
+        const dialog = document.getElementById("confirm-dialog");
+        const message = document.getElementById("confirm-message");
+        if (!dialog || !message) return;
+
+        dialog.addEventListener("click", function (event) {
+          if (event.target === dialog) dialog.close("cancel");
+        });
+
+        document.addEventListener("click", function (event) {
+          const button = event.target.closest("[data-confirm]");
+          if (!button) return;
+          event.preventDefault();
+          const form = button.closest("form");
+          if (!form) return;
+          message.textContent = button.getAttribute("data-confirm");
+          dialog.showModal();
+          dialog.addEventListener("close", function onClose() {
+            if (dialog.returnValue === "ok") form.requestSubmit(button);
+          }, { once: true });
+        });
+      })();
+    </script>
   </body>
 </html>

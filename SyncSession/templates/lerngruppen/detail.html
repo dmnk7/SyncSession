@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }} · SyncSession{% endblock %}
+{% block page_class %}wide{% endblock %}
+
+{% block content %}
+  <p class="hint"><a href="{% url 'home' %}">Zurück zur Übersicht</a></p>
+  <section class="card">
+    <h1>{{ group.name }}</h1>
+    <p>Erstellt von {{ group.created_by.get_full_name|default:group.created_by.username }}.</p>
+
+    {% if can_invite %}
+      <form method="post" action="{% url 'create_invite' group.pk %}">
+        {% csrf_token %}
+        <button type="submit">Einladungslink erzeugen</button>
+      </form>
+    {% endif %}
+
+    {% if is_creator %}
+      <form method="post" action="{% url 'toggle_invite_setting' group.pk %}" class="settings-form" id="invite-settings">
+        {% csrf_token %}
+        <p class="checkbox-row">
+          {{ settings_form.members_can_invite }}
+          <label for="{{ settings_form.members_can_invite.id_for_label }}">{{ settings_form.members_can_invite.label }}</label>
+        </p>
+      </form>
+      <form method="post" action="{% url 'delete_group' group.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="danger" data-confirm="Lerngruppe wirklich löschen?">Gruppe löschen</button>
+      </form>
+    {% else %}
+      <form method="post" action="{% url 'leave_group' group.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="danger" data-confirm="Gruppe wirklich verlassen?">Gruppe verlassen</button>
+      </form>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Mitglieder</h2>
+    <ul class="group-list">
+      {% for membership in members %}
+        <li class="member-row">
+          <span>
+            {{ membership.user.get_full_name|default:membership.user.username }}
+            {% if membership.user_id == group.created_by_id %}
+              <span class="hint">Ersteller</span>
+            {% endif %}
+          </span>
+          {% if is_creator and membership.user_id != group.created_by_id %}
+            <form method="post" action="{% url 'remove_member' group.pk membership.user_id %}">
+              {% csrf_token %}
+              <button type="submit" class="remove-member" data-confirm="{{ membership.user.get_full_name|default:membership.user.username }} wirklich entfernen?">Entfernen</button>
+            </form>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% if is_creator %}
+    <script>
+      document.getElementById("{{ settings_form.members_can_invite.id_for_label }}")
+        ?.addEventListener("change", function () { this.form.submit(); });
+    </script>
+  {% endif %}
+{% endblock %}

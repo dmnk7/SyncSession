@@ -65,6 +65,154 @@ nav button {
   padding: 0 1rem 3rem;
 }
 
+.page.wide {
+  max-width: 36rem;
+}
+
+.page .card + .card {
+  margin-top: 1rem;
+}
+
+h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.group-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.group-list li {
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.group-list li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.group-list a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.checkbox-row input {
+  width: auto;
+}
+
+.checkbox-row label {
+  margin: 0;
+  font-weight: 500;
+}
+
+.member-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.member-row form {
+  margin: 0;
+}
+
+button.remove-member {
+  width: auto;
+  margin: 0;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid #e3b6b6;
+  border-radius: 8px;
+  background: transparent;
+  color: #9f1d1d;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.link-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.link-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.copy-button {
+  width: auto;
+  margin-top: 0;
+  padding: 0.55rem 0.9rem;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.qr-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 1.25rem;
+}
+
+.qr {
+  width: 12rem;
+}
+
+.qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+a.button,
+.button {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+a.button.secondary,
+.button.secondary {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+.error-text,
+.messages .error {
+  color: #9f1d1d;
+}
+
+.messages .error {
+  background: #f8e8e8;
+}
+
 .card {
   background: var(--card);
   border: 1px solid var(--line);
@@ -113,6 +261,19 @@ button[type="submit"] {
   cursor: pointer;
 }
 
+button[type="submit"].danger {
+  background: #9f1d1d;
+}
+
+button[type="submit"].remove-member {
+  width: auto;
+  margin: 0;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid #e3b6b6;
+  background: transparent;
+  color: #9f1d1d;
+}
+
 .errorlist {
   margin: 0.3rem 0;
   padding-left: 1.1rem;
@@ -132,4 +293,58 @@ button[type="submit"] {
   margin-top: 0.35rem;
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+.confirm-dialog {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  max-width: 22rem;
+  width: calc(100% - 2rem);
+}
+
+.confirm-dialog::backdrop {
+  background: rgba(31, 27, 22, 0.4);
+}
+
+.confirm-box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.confirm-box p {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+}
+
+.confirm-actions button {
+  flex: 1;
+  width: auto;
+  margin: 0;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirm-dialog .confirm-cancel {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+}
+
+.confirm-dialog .confirm-ok {
+  border: 0;
+  background: #9f1d1d;
+  color: #fff;
 }

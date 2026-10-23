@@ -8,9 +8,12 @@
     <p>Vor- und Nachname sind nur die Anzeige in der App. Zum Anmelden brauchst du Benutzername und Passwort.</p>
     <form method="post">
       {% csrf_token %}
+      {% if next %}
+        <input type="hidden" name="next" value="{{ next }}">
+      {% endif %}
       {{ form.as_p }}
       <button type="submit">Registrieren</button>
     </form>
-    <p class="hint">Schon ein Konto? <a href="{% url 'login' %}">Einloggen</a></p>
+    <p class="hint">Schon ein Konto? <a href="{% url 'login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Einloggen</a></p>
   </section>
 {% endblock %}

@@ -7,9 +7,12 @@
     <h1>Einloggen</h1>
     <form method="post">
       {% csrf_token %}
+      {% if next %}
+        <input type="hidden" name="next" value="{{ next }}">
+      {% endif %}
       {{ form.as_p }}
       <button type="submit">Einloggen</button>
     </form>
-    <p class="hint">Noch kein Konto? <a href="{% url 'landing' %}">Konto erstellen</a></p>
+    <p class="hint">Noch kein Konto? <a href="{% url 'landing' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Konto erstellen</a></p>
   </section>
 {% endblock %}

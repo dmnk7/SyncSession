@@ -1,10 +1,35 @@
 {% extends "base.html" %}
 
 {% block title %}Start · SyncSession{% endblock %}
+{% block page_class %}wide{% endblock %}
 
 {% block content %}
   <section class="card">
     <h1>Hallo {{ user.get_full_name|default:user.username }}</h1>
     <p>Angemeldet als <strong>{{ user.username }}</strong>.</p>
+  </section>
+
+  <section class="card">
+    <h2>Neue Lerngruppe</h2>
+    <form method="post" action="{% url 'create_group' %}">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Gruppe erstellen</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Deine Lerngruppen</h2>
+    {% if groups %}
+      <ul class="group-list">
+        {% for group in groups %}
+          <li>
+            <a href="{% url 'group_detail' group.pk %}">{{ group.name }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Du bist noch in keiner Lerngruppe.</p>
+    {% endif %}
   </section>
 {% endblock %}

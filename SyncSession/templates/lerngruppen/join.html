@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Einladung · {{ group.name }}{% endblock %}
+{% block page_class %}wide{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h1>{{ group.name }}</h1>
+    <p>Du wurdest in diese Lerngruppe eingeladen. Erstellt von {{ group.created_by.get_full_name|default:group.created_by.username }}.</p>
+  </section>
+
+  <section class="card">
+    <h2>Mitglieder</h2>
+    <ul class="group-list">
+      {% for membership in members %}
+        <li>
+          {{ membership.user.get_full_name|default:membership.user.username }}
+          {% if membership.user_id == group.created_by_id %}
+            <span class="hint">Ersteller</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card">
+    {% if already_member %}
+      <p>Du bist schon in dieser Gruppe.</p>
+      <a class="button" href="{% url 'group_detail' group.pk %}">Zur Gruppe</a>
+    {% else %}
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit">Beitreten</button>
+      </form>
+      <a class="button secondary" href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'landing' %}{% endif %}">Nicht beitreten</a>
+    {% endif %}
+  </section>
+{% endblock %}
