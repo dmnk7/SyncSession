@@ -4,7 +4,7 @@
 {% block page_class %}wide{% endblock %}
 
 {% block content %}
-  <p class="hint"><a href="{% url 'group_detail' group.pk %}">Zurück zur Gruppe</a></p>
+  <p class="hint"><a href="{% url 'group_settings' group.pk %}">Zurück zu den Gruppeneinstellungen</a></p>
   <section class="card">
     <h1>Einladung zu {{ group.name }}</h1>
     <p>Der Link ist 48 Stunden gültig und kann von mehreren Personen genutzt werden.</p>

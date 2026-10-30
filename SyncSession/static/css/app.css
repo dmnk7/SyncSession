@@ -348,3 +348,219 @@ button[type="submit"].remove-member {
   background: #9f1d1d;
   color: #fff;
 }
+
+/* Kalender */
+
+.page.calendar-page {
+  max-width: 64rem;
+}
+
+.calendar-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.calendar-head .button {
+  width: auto;
+  margin: 0.25rem 0 0;
+  white-space: nowrap;
+}
+
+#calendar-status {
+  margin: 0 0 0.75rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  background: #e7f3ec;
+  color: var(--text);
+}
+
+#calendar-status.error-text {
+  background: #f8e8e8;
+}
+
+#kalender {
+  --fc-page-bg-color: var(--card);
+  --fc-border-color: var(--line);
+  --fc-button-bg-color: var(--accent);
+  --fc-button-border-color: var(--accent);
+  --fc-button-hover-bg-color: #1a4537;
+  --fc-button-hover-border-color: #1a4537;
+  --fc-button-active-bg-color: #1a4537;
+  --fc-button-active-border-color: #1a4537;
+  --fc-event-border-color: var(--accent);
+  --fc-event-bg-color: #e7f3ec;
+  --fc-event-text-color: var(--text);
+  --fc-today-bg-color: rgba(33, 85, 68, 0.06);
+  --fc-highlight-color: rgba(33, 85, 68, 0.15);
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  font-size: 0.9rem;
+}
+
+#kalender .fc {
+  font-family: inherit;
+}
+
+#kalender .fc-event {
+  cursor: pointer;
+}
+
+#kalender .fc-event.session-vorschlag {
+  border-style: dashed;
+}
+
+#kalender .fc-event-mirror {
+  opacity: 0.6;
+}
+
+/* Termin-Dialog */
+
+.session-dialog {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  max-width: 26rem;
+  width: calc(100% - 2rem);
+}
+
+.session-dialog::backdrop {
+  background: rgba(31, 27, 22, 0.4);
+}
+
+.session-box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.session-box h2 {
+  margin-top: 0;
+}
+
+.session-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+}
+
+.session-actions button {
+  flex: 1;
+  width: auto;
+  margin: 0;
+  padding: 0.65rem 0.9rem;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.session-actions button.secondary {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+}
+
+.session-actions button.danger {
+  border: 0;
+  background: #9f1d1d;
+  color: #fff;
+}
+
+.session-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Termine: heller Hintergrund, Rand in der Farbe des Mitglieds */
+
+#kalender .fc-event.own {
+  font-weight: 700;
+}
+
+/* Von allen Mitgliedern zugesagte Zeiträume: grün und solid */
+
+#kalender .fc-event.session-konsens {
+  border-style: solid;
+  border-width: 2px;
+  font-weight: 600;
+}
+
+#kalender .fc-event.session-blockiert {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 5px,
+    rgba(255, 253, 248, 0.55) 5px,
+    rgba(255, 253, 248, 0.55) 10px
+  );
+  border-style: solid;
+}
+
+/* Dialog: Art-Auswahl und Teilnahme */
+
+.session-box fieldset {
+  margin: 0 0 0.5rem;
+  padding: 0 0 0.25rem 0.85rem;
+  border: 0;
+  border-left: 3px solid var(--line);
+}
+
+.session-box legend {
+  padding: 0;
+  font-weight: 600;
+}
+
+.session-box h3 {
+  margin: 1rem 0 0.25rem;
+  font-size: 1rem;
+}
+
+.attendance-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.6rem 0 0.4rem;
+}
+
+.attendance-actions button {
+  flex: 1;
+  width: auto;
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.attendance-actions button.danger {
+  border-color: #9f1d1d;
+  color: #9f1d1d;
+}
+
+#attendance-range button {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.6rem 0.9rem;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#attendance-list {
+  margin: 0.85rem 0 0;
+}

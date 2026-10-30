@@ -24,7 +24,7 @@
       <ul class="group-list">
         {% for group in groups %}
           <li>
-            <a href="{% url 'group_detail' group.pk %}">{{ group.name }}</a>
+            <a href="{% url 'group_calendar' group.pk %}">{{ group.name }}</a>
           </li>
         {% endfor %}
       </ul>

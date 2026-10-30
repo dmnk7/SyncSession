@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     path("gruppen/neu/", views.create_group, name="create_group"),
-    path("gruppen/<int:pk>/", views.group_detail, name="group_detail"),
+    path("gruppen/<int:pk>/einstellungen/", views.group_settings, name="group_settings"),
     path("gruppen/<int:pk>/einladen-toggle/", views.toggle_invite_setting, name="toggle_invite_setting"),
     path(
         "gruppen/<int:pk>/mitglieder/<int:user_id>/entfernen/",

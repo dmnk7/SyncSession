@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}{{ group.name }} · SyncSession{% endblock %}
+{% block title %}Einstellungen · {{ group.name }}{% endblock %}
 {% block page_class %}wide{% endblock %}
 
 {% block content %}
-  <p class="hint"><a href="{% url 'home' %}">Zurück zur Übersicht</a></p>
+  <p class="hint"><a href="{% url 'group_calendar' group.pk %}">Zurück zum Kalender</a></p>
   <section class="card">
     <h1>{{ group.name }}</h1>
     <p>Erstellt von {{ group.created_by.get_full_name|default:group.created_by.username }}.</p>

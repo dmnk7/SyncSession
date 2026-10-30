@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ group.name }} · SyncSession{% endblock %}
+{% block page_class %}calendar-page{% endblock %}
+
+{% block extra_head %}
+  <meta name="csrf-token" content="{{ csrf_token }}">
+{% endblock %}
+
+{% block content %}
+  <section class="calendar-head">
+    <div>
+      <h1>{{ group.name }}</h1>
+      <p class="hint">Zeitraum im Raster ziehen für einen Vorschlag oder eine geblockte Zeit. Eigene Einträge lassen sich verschieben und in der Länge ändern. Jedes Mitglied hat eine eigene Farbe.</p>
+    </div>
+    <a class="button secondary" href="{% url 'group_settings' group.pk %}">Einstellungen</a>
+  </section>
+
+  <p id="calendar-status" hidden></p>
+
+  <div id="kalender"
+       data-sessions-url="{% url 'session_list' group.pk %}"
+       data-create-url="{% url 'session_create' group.pk %}"></div>
+
+  <dialog id="session-dialog" class="session-dialog">
+    <div class="session-box">
+      <h2 id="session-dialog-title">Terminvorschlag</h2>
+      <p class="hint" id="session-creator"></p>
+      <p class="hint" id="session-readonly" hidden>Nur der Ersteller kann diesen Vorschlag bearbeiten.</p>
+      <form id="session-form">
+        <fieldset id="kind-row" hidden>
+          <legend>Art</legend>
+          <p class="checkbox-row">
+            <input type="radio" id="kind-vorschlag" name="kind" value="vorschlag" checked>
+            <label for="kind-vorschlag">Terminvorschlag</label>
+          </p>
+          <p class="checkbox-row">
+            <input type="radio" id="kind-blockiert" name="kind" value="blockiert">
+            <label for="kind-blockiert">Geblockte Zeit</label>
+          </p>
+        </fieldset>
+        <p>
+          <label for="session-title">Titel</label>
+          <input id="session-title" name="title" type="text" maxlength="120" required>
+        </p>
+        <p id="location-row">
+          <label for="session-location">Ort</label>
+          <input id="session-location" name="location" type="text" maxlength="120" placeholder="z. B. Online oder Raum">
+        </p>
+        <p>
+          <label for="session-start">Beginn</label>
+          <input id="session-start" type="datetime-local" step="900" required>
+        </p>
+        <p>
+          <label for="session-end">Ende</label>
+          <input id="session-end" type="datetime-local" step="900" required>
+        </p>
+        <p id="repeat-row" hidden>
+          <label for="session-repeat">Wöchentlich wiederholen (Wochen)</label>
+          <input id="session-repeat" type="number" min="1" max="26" value="1">
+        </p>
+
+        <div id="attendance-section" hidden>
+          <h3>Deine Teilnahme</h3>
+          <p class="hint" id="attendance-state">Noch keine Rückmeldung.</p>
+          <div class="attendance-actions">
+            <button type="button" id="accept-full">Zusagen</button>
+            <button type="button" id="accept-partial">Teilweise</button>
+            <button type="button" id="decline" class="danger">Absagen</button>
+          </div>
+          <div id="attendance-range" hidden>
+            <p>
+              <label for="attendance-start">Zusage von</label>
+              <input id="attendance-start" type="datetime-local" step="900">
+            </p>
+            <p>
+              <label for="attendance-end">bis</label>
+              <input id="attendance-end" type="datetime-local" step="900">
+            </p>
+            <button type="button" id="attendance-save">Teil-Zusage speichern</button>
+          </div>
+        </div>
+        <p class="hint" id="attendance-list" hidden></p>
+
+        <div class="session-actions">
+          <button type="button" class="secondary" id="session-cancel">Abbrechen</button>
+          <button type="button" class="danger" id="session-delete" hidden>Löschen</button>
+          <button type="submit" id="session-submit">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/de.global.min.js"></script>
+  <script src="{% static 'js/kalender.js' %}"></script>
+{% endblock %}

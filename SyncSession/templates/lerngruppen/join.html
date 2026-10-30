@@ -26,7 +26,7 @@
   <section class="card">
     {% if already_member %}
       <p>Du bist schon in dieser Gruppe.</p>
-      <a class="button" href="{% url 'group_detail' group.pk %}">Zur Gruppe</a>
+      <a class="button" href="{% url 'group_calendar' group.pk %}">Zur Gruppe</a>
     {% else %}
       <form method="post">
         {% csrf_token %}

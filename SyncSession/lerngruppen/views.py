@@ -88,7 +88,7 @@ def create_group(request):
         group.save()
         Membership.objects.create(group=group, user=request.user)
         messages.success(request, f"Lerngruppe „{group.name}“ erstellt.")
-        return redirect("group_detail", pk=group.pk)
+        return redirect("group_calendar", pk=group.pk)
 
     groups = LearningGroup.for_member(request.user)
     return render(
@@ -99,7 +99,7 @@ def create_group(request):
 
 
 @login_required
-def group_detail(request, pk):
+def group_settings(request, pk):
     group = get_object_or_404(LearningGroup, pk=pk)
     denied = _require_member(request, group)
     if denied:
@@ -108,7 +108,7 @@ def group_detail(request, pk):
     members = group.memberships.select_related("user").order_by("joined_at")
     return render(
         request,
-        "lerngruppen/detail.html",
+        "lerngruppen/settings.html",
         {
             "group": group,
             "members": members,
@@ -125,11 +125,11 @@ def toggle_invite_setting(request, pk):
     if group.created_by_id != request.user.id:
         return HttpResponseForbidden("Nur der Ersteller kann diese Einstellung ändern.")
     if request.method != "POST":
-        return redirect("group_detail", pk=group.pk)
+        return redirect("group_settings", pk=group.pk)
     form = InviteSettingsForm(request.POST, instance=group)
     if form.is_valid():
         form.save()
-    return redirect("group_detail", pk=group.pk)
+    return redirect("group_settings", pk=group.pk)
 
 
 @login_required
@@ -138,14 +138,14 @@ def remove_member(request, pk, user_id):
     if group.created_by_id != request.user.id:
         return HttpResponseForbidden("Nur der Ersteller kann Mitglieder entfernen.")
     if request.method != "POST":
-        return redirect("group_detail", pk=group.pk)
+        return redirect("group_settings", pk=group.pk)
     if user_id == group.created_by_id:
         return HttpResponseForbidden("Der Ersteller kann nicht entfernt werden.")
     membership = get_object_or_404(Membership, group=group, user_id=user_id)
     name = membership.user.get_full_name() or membership.user.username
     membership.delete()
     messages.success(request, f"{name} wurde aus der Gruppe entfernt.")
-    return redirect("group_detail", pk=group.pk)
+    return redirect("group_settings", pk=group.pk)
 
 
 @login_required
@@ -154,7 +154,7 @@ def delete_group(request, pk):
     if group.created_by_id != request.user.id:
         return HttpResponseForbidden("Nur der Ersteller kann die Gruppe löschen.")
     if request.method != "POST":
-        return redirect("group_detail", pk=group.pk)
+        return redirect("group_settings", pk=group.pk)
     name = group.name
     group.delete()
     messages.success(request, f"Lerngruppe „{name}“ wurde gelöscht.")
@@ -170,7 +170,7 @@ def leave_group(request, pk):
     if group.created_by_id == request.user.id:
         return HttpResponseForbidden("Als Ersteller kannst du die Gruppe nur löschen.")
     if request.method != "POST":
-        return redirect("group_detail", pk=group.pk)
+        return redirect("group_settings", pk=group.pk)
     Membership.objects.filter(group=group, user=request.user).delete()
     messages.success(request, f"Du hast die Lerngruppe „{group.name}“ verlassen.")
     return redirect("home")
@@ -185,7 +185,7 @@ def create_invite(request, pk):
     if not group.user_can_invite(request.user):
         return HttpResponseForbidden("Du darfst für diese Gruppe keine Einladungen erzeugen.")
     if request.method != "POST":
-        return redirect("group_detail", pk=group.pk)
+        return redirect("group_settings", pk=group.pk)
 
     invite = Invite.objects.create(
         group=group,
@@ -243,13 +243,13 @@ def join(request, token):
             query = urlencode({"next": request.path})
             return redirect(f"{login_url}?{query}")
         if already_member:
-            return redirect("group_detail", pk=group.pk)
+            return redirect("group_calendar", pk=group.pk)
         Membership.objects.get_or_create(group=group, user=request.user)
         messages.success(
             request,
             f"Du bist der Lerngruppe „{group.name}“ beigetreten.",
         )
-        return redirect("group_detail", pk=group.pk)
+        return redirect("group_calendar", pk=group.pk)
 
     members = group.memberships.select_related("user").order_by("joined_at")
     return render(
