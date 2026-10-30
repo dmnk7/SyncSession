@@ -24,6 +24,3 @@ staticfiles/
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
 .playwright
-
-
-DEMO_USER.md
