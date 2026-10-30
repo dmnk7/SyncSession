@@ -9,8 +9,8 @@
   --surface: #f0f4f7;
   --success: #347864;
   --success-bg: #e8f5f0;
-  --danger: #9f1d1d;
-  --danger-bg: #f8e8e8;
+  --danger: #ff2a2a;
+  --danger-bg: #fff0f0;
   --radius: 5px;
 }
 
@@ -164,7 +164,7 @@ button.remove-member {
   border: 0;
   border-radius: var(--radius);
   background: var(--accent);
-  color: var(--text);
+  color: #fff;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -197,7 +197,7 @@ a.button,
   border: 0;
   border-radius: var(--radius);
   background: var(--accent);
-  color: var(--text);
+  color: #fff;
   font: inherit;
   font-weight: 600;
   text-align: center;
@@ -220,6 +220,17 @@ a.button.secondary,
   display: inline-block;
   width: auto;
   margin: 0;
+}
+
+.settings-page button[type="submit"]:not(.remove-member),
+.settings-page .copy-button {
+  color: #fff;
+}
+
+.settings-page button[type="submit"].delete {
+  border: 1px solid var(--danger);
+  background: #fff;
+  color: var(--danger);
 }
 
 .error-text,
@@ -287,7 +298,7 @@ button[type="submit"] {
   border: 0;
   border-radius: var(--radius);
   background: var(--accent);
-  color: var(--text);
+  color: #fff;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -375,9 +386,13 @@ button[type="submit"].remove-member {
 }
 
 .confirm-dialog .confirm-cancel {
-  border: 1px solid var(--line);
-  background: transparent;
+  border: 0;
+  background: var(--surface);
   color: var(--text);
+}
+
+.confirm-dialog .confirm-cancel:hover {
+  background: #dbe2e8;
 }
 
 .confirm-dialog .confirm-ok {
@@ -419,18 +434,22 @@ button[type="submit"].remove-member {
 }
 
 #remove-delete {
-  border: 0;
-  background: var(--danger);
-  color: #fff;
+  border: 1px solid var(--danger);
+  background: #fff;
+  color: var(--danger);
 }
 
 #remove-cancel {
   border: 0;
-  background: none;
-  color: var(--muted);
-  font-weight: 500;
-  text-decoration: underline;
-  padding: 0.35rem;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.7rem 0.9rem;
+}
+
+#remove-cancel:hover {
+  background: #dbe2e8;
 }
 
 /* Kalender */
@@ -487,7 +506,8 @@ button[type="submit"].remove-member {
   white-space: nowrap;
 }
 
-.calendar-head .button.secondary {
+.calendar-head .button.secondary,
+.settings-back .button.secondary {
   padding: 0.55rem 1.1rem;
   border: 0;
   background: var(--surface);
@@ -495,7 +515,8 @@ button[type="submit"].remove-member {
   font-weight: 600;
 }
 
-.calendar-head .button.secondary:hover {
+.calendar-head .button.secondary:hover,
+.settings-back .button.secondary:hover {
   background: #dbe2e8;
 }
 
@@ -675,22 +696,26 @@ button[type="submit"].remove-member {
   border: 0;
   border-radius: var(--radius);
   background: var(--accent);
-  color: var(--text);
+  color: #fff;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
 
 .session-actions button.secondary {
-  border: 1px solid var(--line);
-  background: transparent;
+  border: 0;
+  background: var(--surface);
   color: var(--text);
 }
 
+.session-actions button.secondary:hover {
+  background: #dbe2e8;
+}
+
 .session-actions button.danger {
-  border: 0;
-  background: var(--danger);
-  color: #fff;
+  border: 1px solid var(--danger);
+  background: #fff;
+  color: var(--danger);
 }
 
 .session-actions button:disabled {
@@ -823,7 +848,7 @@ button[type="submit"].remove-member {
   border: 0;
   border-radius: var(--radius);
   background: var(--accent);
-  color: var(--text);
+  color: #fff;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -872,7 +897,7 @@ button[type="submit"].remove-member {
 
 .decision-actions button.is-chosen {
   background: var(--accent);
-  color: var(--text);
+  color: #fff;
 }
 
 #resolve-decline {

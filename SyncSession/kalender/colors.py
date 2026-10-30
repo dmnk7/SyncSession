@@ -17,9 +17,9 @@ CONSENSUS_COLOR = "#347864"
 
 CONSENSUS_BACKGROUND = "#e8f5f0"
 
-DECLINED_COLOR = "#9f1d1d"
+DECLINED_COLOR = "#ff2a2a"
 
-DECLINED_BACKGROUND = "#f8e8e8"
+DECLINED_BACKGROUND = "#fff0f0"
 
 
 def color_for_user(user_id):
