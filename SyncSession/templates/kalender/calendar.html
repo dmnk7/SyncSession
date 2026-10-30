@@ -10,18 +10,25 @@
 
 {% block content %}
   <section class="calendar-head">
-    <div>
-      <h1>{{ group.name }}</h1>
-      <p class="hint">Zeitraum im Raster ziehen für einen Vorschlag oder eine geblockte Zeit. Eigene Einträge lassen sich verschieben und in der Länge ändern. Jedes Mitglied hat eine eigene Farbe.</p>
-    </div>
+    <h1>{{ group.name }}</h1>
     <a class="button secondary" href="{% url 'group_settings' group.pk %}">Einstellungen</a>
   </section>
 
   <p id="calendar-status" hidden></p>
 
-  <div id="kalender"
-       data-sessions-url="{% url 'session_list' group.pk %}"
-       data-create-url="{% url 'session_create' group.pk %}"></div>
+  <div class="calendar-shell">
+    <div id="kalender"
+         data-sessions-url="{% url 'session_list' group.pk %}"
+         data-create-url="{% url 'session_create' group.pk %}"></div>
+    <ul class="color-legend" aria-label="Farben">
+      {% for person in legend %}
+        <li>
+          <span class="color-swatch" style="background: {{ person.color }}"></span>
+          {{ person.name }}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 
   <dialog id="session-dialog" class="session-dialog">
     <div class="session-box">
@@ -82,6 +89,16 @@
           </div>
         </div>
         <p class="hint" id="attendance-list" hidden></p>
+
+        <div id="resolution-section" class="decision" hidden>
+          <h3>Was soll mit dem Termin passieren?</h3>
+          <p class="decision-tally" id="resolution-tally"></p>
+          <div class="decision-actions" id="resolution-actions">
+            <button type="button" id="resolve-accept">Findet statt</button>
+            <button type="button" id="resolve-decline">Fällt aus</button>
+          </div>
+          <button type="button" id="resolve-clear" class="decision-reset" hidden>Wieder offen lassen</button>
+        </div>
 
         <div class="session-actions">
           <button type="button" class="secondary" id="session-cancel">Abbrechen</button>

@@ -8,13 +8,19 @@ import qrcode
 import qrcode.image.svg
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import urlencode
 
+from kalender.models import Attendance, Session
+
 from .forms import GroupCreateForm, InviteSettingsForm
 from .models import Invite, LearningGroup, Membership
+
+TERMINE_BEHALTEN = "behalten"
+TERMINE_LOESCHEN = "loeschen"
 
 
 def _require_member(request, group):
@@ -106,6 +112,19 @@ def group_settings(request, pk):
         return denied
 
     members = group.memberships.select_related("user").order_by("joined_at")
+    can_invite = group.user_can_invite(request.user)
+    invite = None
+    join_url = ""
+    qr_svg = ""
+    if can_invite:
+        invite = group.invites.order_by("-created_at").first()
+        if invite is not None and not invite.is_expired():
+            join_url = _shareable_url(
+                request, reverse("join", args=[invite.token])
+            )
+            qr_svg = _qr_svg(join_url)
+        else:
+            invite = None
     return render(
         request,
         "lerngruppen/settings.html",
@@ -113,8 +132,11 @@ def group_settings(request, pk):
             "group": group,
             "members": members,
             "settings_form": InviteSettingsForm(instance=group),
-            "can_invite": group.user_can_invite(request.user),
+            "can_invite": can_invite,
             "is_creator": group.created_by_id == request.user.id,
+            "invite": invite,
+            "join_url": join_url,
+            "qr_svg": qr_svg,
         },
     )
 
@@ -141,10 +163,30 @@ def remove_member(request, pk, user_id):
         return redirect("group_settings", pk=group.pk)
     if user_id == group.created_by_id:
         return HttpResponseForbidden("Der Ersteller kann nicht entfernt werden.")
+    action = request.POST.get("termine", "")
+    if action not in (TERMINE_BEHALTEN, TERMINE_LOESCHEN):
+        messages.error(
+            request,
+            "Bitte entscheide, ob die Termine behalten oder gelöscht werden.",
+        )
+        return redirect("group_settings", pk=group.pk)
     membership = get_object_or_404(Membership, group=group, user_id=user_id)
     name = membership.user.get_full_name() or membership.user.username
-    membership.delete()
-    messages.success(request, f"{name} wurde aus der Gruppe entfernt.")
+    with transaction.atomic():
+        if action == TERMINE_LOESCHEN:
+            Session.objects.filter(group=group, created_by_id=user_id).delete()
+        Attendance.objects.filter(session__group=group, user_id=user_id).delete()
+        membership.delete()
+    if action == TERMINE_LOESCHEN:
+        messages.success(
+            request,
+            f"{name} wurde entfernt. Die Termine wurden gelöscht.",
+        )
+    else:
+        messages.success(
+            request,
+            f"{name} wurde entfernt. Die Termine bleiben im Kalender.",
+        )
     return redirect("group_settings", pk=group.pk)
 
 
@@ -193,7 +235,7 @@ def create_invite(request, pk):
         created_by=request.user,
         expires_at=Invite.expiry_from_now(),
     )
-    return redirect("invite_detail", pk=group.pk, invite_id=invite.pk)
+    return redirect("group_settings", pk=group.pk)
 
 
 @login_required
@@ -205,18 +247,8 @@ def invite_detail(request, pk, invite_id):
     if not group.user_can_invite(request.user):
         return HttpResponseForbidden("Du darfst Einladungen dieser Gruppe nicht sehen.")
 
-    invite = get_object_or_404(Invite, pk=invite_id, group=group)
-    join_url = _shareable_url(request, reverse("join", args=[invite.token]))
-    return render(
-        request,
-        "lerngruppen/invite.html",
-        {
-            "group": group,
-            "invite": invite,
-            "join_url": join_url,
-            "qr_svg": _qr_svg(join_url),
-        },
-    )
+    get_object_or_404(Invite, pk=invite_id, group=group)
+    return redirect("group_settings", pk=group.pk)
 
 
 def join(request, token):

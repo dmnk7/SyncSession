@@ -21,4 +21,9 @@ urlpatterns = [
         views.session_attendance,
         name="session_attendance",
     ),
+    path(
+        "gruppen/<int:pk>/termine/<int:session_id>/darstellung/",
+        views.session_resolution,
+        name="session_resolution",
+    ),
 ]

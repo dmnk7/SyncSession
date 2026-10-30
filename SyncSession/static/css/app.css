@@ -204,6 +204,16 @@ a.button.secondary,
   color: var(--text);
 }
 
+.settings-back {
+  margin: 0 0 1rem;
+}
+
+.settings-back .button {
+  display: inline-block;
+  width: auto;
+  margin: 0;
+}
+
 .error-text,
 .messages .error {
   color: #9f1d1d;
@@ -349,22 +359,104 @@ button[type="submit"].remove-member {
   color: #fff;
 }
 
+.remove-dialog {
+  max-width: 24rem;
+}
+
+.remove-member-question {
+  margin: 0.45rem 0 0;
+  font-weight: 500;
+}
+
+.remove-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 1.1rem;
+}
+
+.remove-choice button {
+  width: 100%;
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#remove-keep {
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+}
+
+#remove-delete {
+  border: 0;
+  background: #9f1d1d;
+  color: #fff;
+}
+
+#remove-cancel {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-weight: 500;
+  text-decoration: underline;
+  padding: 0.35rem;
+}
+
 /* Kalender */
 
 .page.calendar-page {
-  max-width: 64rem;
+  max-width: 92rem;
 }
 
 .calendar-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
+.calendar-head h1 {
+  margin-bottom: 0;
+}
+
+.calendar-shell {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.color-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 1.1rem;
+  margin: 0;
+  padding: 0.15rem 0.75rem 0.8rem;
+  list-style: none;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.color-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.color-swatch {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  flex: none;
+}
+
 .calendar-head .button {
   width: auto;
-  margin: 0.25rem 0 0;
+  margin: 0;
   white-space: nowrap;
 }
 
@@ -390,14 +482,13 @@ button[type="submit"].remove-member {
   --fc-button-active-bg-color: #1a4537;
   --fc-button-active-border-color: #1a4537;
   --fc-event-border-color: var(--accent);
-  --fc-event-bg-color: #e7f3ec;
+  --fc-event-bg-color: #e8f5f0;
   --fc-event-text-color: var(--text);
-  --fc-today-bg-color: rgba(33, 85, 68, 0.06);
-  --fc-highlight-color: rgba(33, 85, 68, 0.15);
-  padding: 0.75rem;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--card);
+  --fc-today-bg-color: rgba(52, 120, 100, 0.06);
+  --fc-highlight-color: rgba(52, 120, 100, 0.15);
+  padding: 0.75rem 0.75rem 0.25rem;
+  border: 0;
+  background: transparent;
   font-size: 0.9rem;
 }
 
@@ -493,6 +584,45 @@ button[type="submit"].remove-member {
   font-weight: 600;
 }
 
+#kalender .fc-event.session-abgesagt {
+  border-style: solid;
+  border-width: 2px;
+}
+
+#kalender .fc-event.session-abgesagt .fc-event-title {
+  text-decoration: line-through;
+}
+
+#kalender .event-tally {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: 0.35rem;
+  font-weight: 600;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+#kalender .event-tally span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+#kalender .tally-icon {
+  width: 0.85em;
+  height: 0.85em;
+  display: block;
+}
+
+#kalender .tally-yes {
+  color: #347864;
+}
+
+#kalender .tally-no {
+  color: #9f1d1d;
+}
+
 #kalender .fc-event.session-blockiert {
   background-image: repeating-linear-gradient(
     45deg,
@@ -525,12 +655,17 @@ button[type="submit"].remove-member {
 
 .attendance-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin: 0.6rem 0 0.4rem;
 }
 
+.attendance-actions[hidden] {
+  display: none;
+}
+
 .attendance-actions button {
-  flex: 1;
+  flex: 1 1 6rem;
   width: auto;
   margin: 0;
   padding: 0.55rem 0.75rem;
@@ -548,6 +683,11 @@ button[type="submit"].remove-member {
   color: #9f1d1d;
 }
 
+.attendance-actions button.secondary {
+  border-color: var(--line);
+  color: var(--text);
+}
+
 #attendance-range button {
   width: 100%;
   margin-top: 0.25rem;
@@ -563,4 +703,73 @@ button[type="submit"].remove-member {
 
 #attendance-list {
   margin: 0.85rem 0 0;
+}
+
+.decision {
+  margin-top: 1.1rem;
+  padding: 0.95rem 1rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f6f1e6;
+}
+
+.decision h3 {
+  margin: 0;
+}
+
+.decision-tally {
+  margin: 0.45rem 0 0;
+  font-weight: 700;
+}
+
+.decision-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
+.decision-actions button {
+  width: 100%;
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.decision-actions button.is-chosen {
+  background: var(--accent);
+  color: #fff;
+}
+
+#resolve-decline {
+  border-color: #9f1d1d;
+  color: #9f1d1d;
+}
+
+#resolve-decline.is-chosen {
+  background: #9f1d1d;
+  color: #fff;
+}
+
+.decision-reset {
+  display: block;
+  width: 100%;
+  margin: 0.7rem 0 0;
+  padding: 0.2rem;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.decision-reset[hidden] {
+  display: none;
 }

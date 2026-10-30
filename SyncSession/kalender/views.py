@@ -16,6 +16,8 @@ from lerngruppen.models import LearningGroup
 from .colors import (
     CONSENSUS_BACKGROUND,
     CONSENSUS_COLOR,
+    DECLINED_BACKGROUND,
+    DECLINED_COLOR,
     background_for_user,
     color_for_user,
 )
@@ -87,25 +89,88 @@ def _attendance_data(attendance):
     return data
 
 
-def _session_events(session, request_user, group_pk, attendances, member_ids):
+def _member_ids_for_session(session, memberships, attendances_by_user):
+    """Mitglieder, die den Stand eines Termins bestimmen.
+
+    Wer der Gruppe erst nach dem Termin beigetreten ist und noch nicht
+    geantwortet hat, lässt einen schon festgelegten Stand unverändert.
+    """
+    ids = []
+    for membership in memberships:
+        user_id = membership.user_id
+        replied = user_id in attendances_by_user
+        joined_later = (
+            session.created_at is not None
+            and membership.joined_at > session.created_at
+        )
+        if user_id != session.created_by_id and joined_later and not replied:
+            continue
+        ids.append(user_id)
+    return ids
+
+
+def _reply_tally(session, member_ids, attendances_by_user):
+    """Zählt Zusagen und Absagen der anderen Mitglieder.
+
+    Der Ersteller zählt nicht mit. „angenommen“ und „abgesagt“ gelten nur,
+    wenn jede andere gezählte Person dieselbe Rückmeldung gegeben hat.
+    Sobald beides vorkommt, ist der Stand „gemischt“.
+    """
+    accepted = 0
+    declined = 0
+    others = 0
+    for user_id in member_ids:
+        if user_id == session.created_by_id:
+            continue
+        others += 1
+        attendance = attendances_by_user.get(user_id)
+        if attendance is None:
+            continue
+        if attendance.status == STATUS_ZUGESAGT:
+            accepted += 1
+        elif attendance.status == STATUS_ABGESAGT:
+            declined += 1
+
+    if accepted == others:
+        state = "angenommen"
+    elif others > 0 and declined == others:
+        state = "abgesagt"
+    elif accepted and declined:
+        state = "gemischt"
+    else:
+        state = "offen"
+    return accepted, declined, state
+
+
+def _session_events(session, request_user, group_pk, attendances, memberships):
     """Baut die Kalender-Events eines Termins.
 
-    Vorschläge werden in Segmente zerlegt: Zeiträume, die von allen
-    Mitgliedern zugesagt sind, sind grün und solid, der Rest bleibt
-    gestrichelt in der Farbe des Erstellers.
+    Stimmen alle anderen zu, bleibt der Termin grün und durchgezogen,
+    bei Teil-Zusagen nur in der gemeinsamen Zeit. Sagen alle anderen ab,
+    ist er durchgestrichen. Sind Zusagen und Absagen gemischt, bleibt er
+    gestrichelt, bis der Ersteller die Darstellung festlegt.
     """
     attendances = list(attendances)
     by_user = {attendance.user_id: attendance for attendance in attendances}
+    member_ids = _member_ids_for_session(session, memberships, by_user)
     own = session.created_by_id == request_user.id
 
     attendance_list = []
     my_attendance = None
+    accepted_count = 0
+    declined_count = 0
+    reply_state = ""
+    display_override = ""
     if session.kind != Session.KIND_BLOCKIERT:
         for attendance in attendances:
             data = _attendance_data(attendance)
             attendance_list.append(data)
             if attendance.user_id == request_user.id:
                 my_attendance = data
+        accepted_count, declined_count, reply_state = _reply_tally(
+            session, member_ids, by_user
+        )
+        display_override = session.display_override
 
     base = {
         "id": session.id,
@@ -118,10 +183,17 @@ def _session_events(session, request_user, group_pk, attendances, member_ids):
         "own": own,
         "attendances": attendance_list,
         "my_attendance": my_attendance,
+        "accepted_count": accepted_count,
+        "declined_count": declined_count,
+        "reply_state": reply_state,
+        "display_override": display_override,
         "update_url": reverse("session_update", args=[group_pk, session.id]),
         "delete_url": reverse("session_delete", args=[group_pk, session.id]),
         "attendance_url": reverse(
             "session_attendance", args=[group_pk, session.id]
+        ),
+        "resolution_url": reverse(
+            "session_resolution", args=[group_pk, session.id]
         ),
     }
 
@@ -142,6 +214,32 @@ def _session_events(session, request_user, group_pk, attendances, member_ids):
                 className=(
                     "session-blockiert own" if own else "session-blockiert"
                 ),
+                editable=own,
+            )
+        ]
+
+    effective = display_override if reply_state == "gemischt" else ""
+    if reply_state == "abgesagt" or effective == Session.DISPLAY_ABGESAGT:
+        return [
+            dict(
+                base,
+                start=session.start.isoformat(),
+                end=session.end.isoformat(),
+                borderColor=DECLINED_COLOR,
+                backgroundColor=DECLINED_BACKGROUND,
+                className="session-abgesagt own" if own else "session-abgesagt",
+                editable=own,
+            )
+        ]
+    if effective == Session.DISPLAY_ANGENOMMEN:
+        return [
+            dict(
+                base,
+                start=session.start.isoformat(),
+                end=session.end.isoformat(),
+                borderColor=CONSENSUS_COLOR,
+                backgroundColor=CONSENSUS_BACKGROUND,
+                className="session-konsens",
                 editable=own,
             )
         ]
@@ -233,6 +331,10 @@ def _consensus_range(session, member_ids, attendances_by_user):
     return low, high
 
 
+def _memberships(group):
+    return list(group.memberships.all())
+
+
 def _member_or_403(request, group):
     if group.is_member(request.user):
         return None
@@ -248,7 +350,16 @@ def group_calendar(request, pk):
             f"Du gehörst nicht mehr zur Lerngruppe „{group.name}“.",
         )
         return redirect("home")
-    return render(request, "kalender/calendar.html", {"group": group})
+    memberships = group.memberships.select_related("user").order_by("joined_at")
+    legend = [
+        {"name": _user_display(membership.user), "color": color_for_user(membership.user_id)}
+        for membership in memberships
+    ]
+    return render(
+        request,
+        "kalender/calendar.html",
+        {"group": group, "legend": legend},
+    )
 
 
 @require_GET
@@ -276,9 +387,7 @@ def session_list(request, pk):
     if start is not None and end is not None:
         sessions = sessions.filter(Q(end__gt=start) & Q(start__lt=end))
 
-    member_ids = list(
-        group.memberships.values_list("user_id", flat=True)
-    )
+    memberships = _memberships(group)
     events = []
     for session in sessions:
         events.extend(
@@ -287,7 +396,7 @@ def session_list(request, pk):
                 request.user,
                 group.pk,
                 attendances=list(session.attendances.all()),
-                member_ids=member_ids,
+                memberships=memberships,
             )
         )
     return JsonResponse(events, safe=False)
@@ -352,7 +461,7 @@ def session_create(request, pk):
                     request.user,
                     group.pk,
                     attendances=[],
-                    member_ids=[],
+                    memberships=_memberships(group),
                 )[0]
                 for session in created
             ]
@@ -395,9 +504,7 @@ def session_update(request, pk, session_id):
             attendances=list(
                 session.attendances.select_related("user")
             ),
-            member_ids=list(
-                group.memberships.values_list("user_id", flat=True)
-            ),
+            memberships=_memberships(group),
         )[0]
     )
 
@@ -478,3 +585,64 @@ def session_attendance(request, pk, session_id):
     )
     attendance = Attendance.objects.get(session=session, user=request.user)
     return JsonResponse(_attendance_data(attendance))
+
+
+@require_POST
+@login_required
+def session_resolution(request, pk, session_id):
+    group = get_object_or_404(LearningGroup, pk=pk)
+    denied = _member_or_403(request, group)
+    if denied:
+        return denied
+
+    session = get_object_or_404(Session, pk=session_id, group=group)
+    if session.created_by_id != request.user.id:
+        return _json_error(
+            "Nur der Ersteller kann die Darstellung festlegen.", status=403
+        )
+    if session.kind != Session.KIND_VORSCHLAG:
+        return _json_error(
+            "Für geblockte Zeiten gibt es keine Darstellung.", status=400
+        )
+
+    data, error = _read_json_body(request)
+    if error:
+        return error
+
+    display = str(data.get("display") or "")
+    if display not in (
+        "",
+        Session.DISPLAY_ANGENOMMEN,
+        Session.DISPLAY_ABGESAGT,
+    ):
+        return JsonResponse(
+            {"errors": {"display": ["Unbekannte Darstellung."]}},
+            status=400,
+        )
+
+    if display:
+        attendances = {
+            attendance.user_id: attendance
+            for attendance in session.attendances.all()
+        }
+        _, _, reply_state = _reply_tally(
+            session,
+            _member_ids_for_session(session, _memberships(group), attendances),
+            attendances,
+        )
+        if reply_state != "gemischt":
+            return _json_error(
+                "Festlegen geht nur, solange Zusagen und Absagen gemischt sind."
+            )
+
+    session.display_override = display
+    session.save(update_fields=["display_override"])
+    return JsonResponse(
+        _session_events(
+            session,
+            request.user,
+            group.pk,
+            attendances=list(session.attendances.select_related("user")),
+            memberships=_memberships(group),
+        )[0]
+    )

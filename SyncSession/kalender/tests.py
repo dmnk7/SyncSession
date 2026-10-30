@@ -9,6 +9,9 @@ from lerngruppen.models import LearningGroup, Membership
 from .colors import (
     CONSENSUS_BACKGROUND,
     CONSENSUS_COLOR,
+    DECLINED_BACKGROUND,
+    DECLINED_COLOR,
+    EVENT_COLORS,
     background_for_user,
     color_for_user,
 )
@@ -555,7 +558,7 @@ class ConsensusTests(CalendarTestCase):
         self.assertFalse(data[0]["editable"])
         self.assertFalse(data[1]["editable"])
 
-    def test_declined_member_blocks_consensus(self):
+    def test_declined_by_everyone_else_uses_decline_style(self):
         session = self.create_session(self.owner)
         Attendance.objects.create(
             session=session,
@@ -566,7 +569,53 @@ class ConsensusTests(CalendarTestCase):
         data = self.fetch_events(self.login(self.member))
 
         self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["className"], "session-vorschlag")
+        self.assertEqual(data[0]["className"], "session-abgesagt")
+        self.assertEqual(data[0]["borderColor"], DECLINED_COLOR)
+        self.assertEqual(data[0]["backgroundColor"], DECLINED_BACKGROUND)
+        self.assertEqual(data[0]["reply_state"], "abgesagt")
+
+    def test_member_joining_later_keeps_an_accepted_session(self):
+        session = self.create_session(self.owner)
+        self.accept(self.member, session)
+        late = User.objects.create_user("spaeter", password="pw-spaeter-123456")
+        Membership.objects.create(group=self.group, user=late)
+
+        data = self.fetch_events(self.login(self.owner))
+
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["className"], "session-konsens")
+        self.assertEqual(data[0]["reply_state"], "angenommen")
+
+    def test_member_joining_later_keeps_a_declined_session(self):
+        session = self.create_session(self.owner)
+        Attendance.objects.create(
+            session=session,
+            user=self.member,
+            status="abgesagt",
+        )
+        late = User.objects.create_user("spaeter2", password="pw-spaeter-123456")
+        Membership.objects.create(group=self.group, user=late)
+
+        data = self.fetch_events(self.login(self.owner))
+
+        self.assertEqual(data[0]["className"], "session-abgesagt own")
+        self.assertEqual(data[0]["reply_state"], "abgesagt")
+
+    def test_later_member_counts_after_replying(self):
+        session = self.create_session(self.owner)
+        self.accept(self.member, session)
+        late = User.objects.create_user("spaeter3", password="pw-spaeter-123456")
+        Membership.objects.create(group=self.group, user=late)
+        Attendance.objects.create(
+            session=session,
+            user=late,
+            status="abgesagt",
+        )
+
+        data = self.fetch_events(self.login(self.owner))
+
+        self.assertEqual(data[0]["reply_state"], "gemischt")
+        self.assertIn("session-vorschlag", data[0]["className"])
 
     def test_segments_share_session_context(self):
         session = self.create_session(self.owner)
@@ -587,3 +636,168 @@ class ConsensusTests(CalendarTestCase):
             )
             self.assertEqual(segment["session_end"], session.end.isoformat())
             self.assertEqual(segment["attendance_url"], data[0]["attendance_url"])
+
+
+class MixedReplyTests(CalendarTestCase):
+    def setUp(self):
+        super().setUp()
+        self.third = User.objects.create_user("third", password="pw-third-123456")
+        Membership.objects.create(group=self.group, user=self.third)
+
+    def accept(self, user, session):
+        Attendance.objects.update_or_create(
+            session=session,
+            user=user,
+            defaults={
+                "status": "zugesagt",
+                "start": self.start,
+                "end": self.end,
+            },
+        )
+
+    def decline(self, user, session):
+        Attendance.objects.update_or_create(
+            session=session,
+            user=user,
+            defaults={"status": "abgesagt", "start": None, "end": None},
+        )
+
+    def fetch(self, user):
+        response = self.login(user).get(f"/gruppen/{self.group.pk}/termine/")
+        self.assertEqual(response.status_code, 200)
+        return response.json()
+
+    def resolve(self, user, session, display):
+        return self.login(user).post(
+            f"/gruppen/{self.group.pk}/termine/{session.pk}/darstellung/",
+            {"display": display},
+            content_type="application/json",
+        )
+
+    def test_mixed_replies_stay_a_dashed_proposal_with_counts(self):
+        session = self.create_session(self.owner)
+        self.accept(self.member, session)
+        self.decline(self.third, session)
+
+        data = self.fetch(self.owner)
+
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["className"], "session-vorschlag own")
+        self.assertEqual(data[0]["reply_state"], "gemischt")
+        self.assertEqual(data[0]["accepted_count"], 1)
+        self.assertEqual(data[0]["declined_count"], 1)
+        self.assertEqual(data[0]["display_override"], "")
+        self.assertEqual(data[0]["borderColor"], color_for_user(self.owner.id))
+
+    def test_pending_reply_keeps_a_single_decline_open(self):
+        session = self.create_session(self.owner)
+        self.decline(self.member, session)
+
+        data = self.fetch(self.owner)
+
+        self.assertEqual(data[0]["reply_state"], "offen")
+        self.assertEqual(data[0]["className"], "session-vorschlag own")
+        self.assertEqual(data[0]["accepted_count"], 0)
+        self.assertEqual(data[0]["declined_count"], 1)
+
+    def test_creator_can_show_mixed_session_as_accepted(self):
+        session = self.create_session(self.owner)
+        self.accept(self.member, session)
+        self.decline(self.third, session)
+
+        response = self.resolve(self.owner, session, "angenommen")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["className"], "session-konsens")
+        self.assertEqual(response.json()["borderColor"], CONSENSUS_COLOR)
+        self.assertEqual(response.json()["display_override"], "angenommen")
+        self.assertEqual(response.json()["reply_state"], "gemischt")
+        session.refresh_from_db()
+        self.assertEqual(session.display_override, "angenommen")
+
+    def test_creator_can_show_mixed_session_as_declined(self):
+        session = self.create_session(self.owner)
+        self.accept(self.member, session)
+        self.decline(self.third, session)
+
+        response = self.resolve(self.owner, session, "abgesagt")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["className"], "session-abgesagt own")
+        self.assertEqual(response.json()["borderColor"], DECLINED_COLOR)
+        self.assertEqual(response.json()["backgroundColor"], DECLINED_BACKGROUND)
+
+    def test_creator_can_reopen_a_mixed_session(self):
+        session = self.create_session(self.owner, title="Offen")
+        session.display_override = "angenommen"
+        session.save(update_fields=["display_override"])
+        self.accept(self.member, session)
+        self.decline(self.third, session)
+
+        response = self.resolve(self.owner, session, "")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["className"], "session-vorschlag own")
+        self.assertEqual(response.json()["display_override"], "")
+
+    def test_other_member_cannot_set_the_display(self):
+        session = self.create_session(self.owner)
+        self.accept(self.member, session)
+        self.decline(self.third, session)
+
+        response = self.resolve(self.member, session, "angenommen")
+
+        self.assertEqual(response.status_code, 403)
+        session.refresh_from_db()
+        self.assertEqual(session.display_override, "")
+
+    def test_display_is_rejected_when_replies_are_not_mixed(self):
+        session = self.create_session(self.owner)
+        self.accept(self.member, session)
+        self.accept(self.third, session)
+
+        response = self.resolve(self.owner, session, "abgesagt")
+
+        self.assertEqual(response.status_code, 400)
+        session.refresh_from_db()
+        self.assertEqual(session.display_override, "")
+
+    def test_unanimous_accept_ignores_an_old_override(self):
+        session = self.create_session(self.owner)
+        session.display_override = "abgesagt"
+        session.save(update_fields=["display_override"])
+        self.accept(self.member, session)
+        self.accept(self.third, session)
+
+        data = self.fetch(self.member)
+
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["className"], "session-konsens")
+        self.assertEqual(data[0]["reply_state"], "angenommen")
+        self.assertEqual(data[0]["borderColor"], CONSENSUS_COLOR)
+
+
+class MemberColorTests(TestCase):
+    def test_no_member_color_is_red_or_the_accepted_green(self):
+        palette = [color.lower() for color in EVENT_COLORS]
+        self.assertNotIn("#d62728", palette)
+        self.assertNotIn(DECLINED_COLOR.lower(), palette)
+        self.assertNotIn(CONSENSUS_COLOR.lower(), palette)
+        for user_id in range(1, len(EVENT_COLORS) + 1):
+            color = color_for_user(user_id).lower()
+            self.assertNotEqual(color, DECLINED_COLOR.lower())
+            self.assertNotEqual(color, CONSENSUS_COLOR.lower())
+
+
+class CalendarPageTests(CalendarTestCase):
+    def test_page_shows_a_color_legend_without_the_old_hint(self):
+        response = self.login(self.owner).get(f"/gruppen/{self.group.pk}/")
+
+        self.assertNotContains(response, "Zeitraum im Raster")
+        self.assertContains(
+            response, f"background: {color_for_user(self.owner.id)}"
+        )
+        self.assertContains(
+            response, f"background: {color_for_user(self.member.id)}"
+        )
+        self.assertContains(response, "member")

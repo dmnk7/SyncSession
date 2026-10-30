@@ -37,9 +37,15 @@
   const acceptPartialButton = document.getElementById("accept-partial");
   const attendanceSaveButton = document.getElementById("attendance-save");
   const declineButton = document.getElementById("decline");
+  const resolutionSection = document.getElementById("resolution-section");
+  const resolutionTally = document.getElementById("resolution-tally");
+  const resolveAcceptButton = document.getElementById("resolve-accept");
+  const resolveDeclineButton = document.getElementById("resolve-decline");
+  const resolveClearButton = document.getElementById("resolve-clear");
 
   if (
-    !csrfMeta || !statusEl || !dialog || !form || !attendanceSection
+    !csrfMeta || !statusEl || !dialog || !form || !attendanceSection ||
+    !resolutionSection
   ) {
     return;
   }
@@ -202,6 +208,35 @@
     }
   }
 
+  function countLabel(count, singular, plural) {
+    const amount = Number(count) || 0;
+    return amount + " " + (amount === 1 ? singular : plural);
+  }
+
+  function renderResolution(props) {
+    const mixed = props.reply_state === "gemischt" && props.own;
+    resolutionSection.hidden = !mixed;
+    if (!mixed) {
+      return;
+    }
+    const override = props.display_override || "";
+    resolutionTally.textContent =
+      countLabel(props.accepted_count, "Zusage", "Zusagen") +
+      " · " +
+      countLabel(props.declined_count, "Absage", "Absagen");
+    resolveAcceptButton.classList.toggle("is-chosen", override === "angenommen");
+    resolveDeclineButton.classList.toggle("is-chosen", override === "abgesagt");
+    resolveAcceptButton.setAttribute(
+      "aria-pressed",
+      override === "angenommen" ? "true" : "false"
+    );
+    resolveDeclineButton.setAttribute(
+      "aria-pressed",
+      override === "abgesagt" ? "true" : "false"
+    );
+    resolveClearButton.hidden = !override;
+  }
+
   function openCreateDialog(selection) {
     editingEvent = null;
     form.reset();
@@ -215,6 +250,7 @@
     attendanceSection.hidden = true;
     attendanceList.hidden = true;
     attendanceRange.hidden = true;
+    resolutionSection.hidden = true;
     setFieldsEnabled(true);
     submitButton.textContent = "Erstellen";
     startInput.value = formatLocal(selection.start);
@@ -262,13 +298,21 @@
     if (!isBlock) {
       attendanceSection.hidden = own;
       renderAttendance(event, props);
+      renderResolution(props);
     } else {
       attendanceSection.hidden = true;
       attendanceList.hidden = true;
+      resolutionSection.hidden = true;
     }
 
     setStatus("", false);
     dialog.showModal();
+    if (
+      document.activeElement &&
+      document.activeElement.closest("#attendance-section")
+    ) {
+      document.activeElement.blur();
+    }
   }
 
   async function persistMove(info) {
@@ -286,6 +330,29 @@
       info.revert();
       setStatus(error.message, true);
     }
+  }
+
+  function tallyMark(count, kind) {
+    const item = document.createElement("span");
+    item.className = "tally-" + kind;
+    item.append(document.createTextNode(String(count)));
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.classList.add("tally-icon");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "currentColor");
+    path.setAttribute("stroke-width", "2");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    path.setAttribute(
+      "d",
+      kind === "yes" ? "M20 6 9 17 4 12" : "M18 6 6 18M6 6 18 18"
+    );
+    svg.appendChild(path);
+    item.appendChild(svg);
+    return item;
   }
 
   calendar = new FullCalendar.Calendar(container, {
@@ -334,6 +401,29 @@
     },
     eventResize: function (info) {
       persistMove(info);
+    },
+    eventDidMount: function (info) {
+      const props = info.event.extendedProps;
+      if (props.reply_state !== "gemischt" || props.display_override) {
+        return;
+      }
+      const title = info.el.querySelector(".fc-event-title");
+      const host = title || info.el;
+      if (host.querySelector(".event-tally")) {
+        return;
+      }
+      const tally = document.createElement("span");
+      tally.className = "event-tally";
+      const accepted = Number(props.accepted_count) || 0;
+      const declined = Number(props.declined_count) || 0;
+      tally.setAttribute(
+        "aria-label",
+        countLabel(accepted, "Zusage", "Zusagen") +
+          ", " +
+          countLabel(declined, "Absage", "Absagen")
+      );
+      tally.append(tallyMark(accepted, "yes"), tallyMark(declined, "no"));
+      host.appendChild(tally);
     },
   });
   calendar.render();
@@ -402,6 +492,7 @@
       event.extendedProps.my_attendance = attendance;
       renderAttendance(event, props);
       attendanceRange.hidden = true;
+      dialog.close();
       calendar.refetchEvents();
       setStatus("Zusage gespeichert.", false);
     } catch (error) {
@@ -450,6 +541,7 @@
       event.extendedProps.my_attendance = attendance;
       renderAttendance(event, event.extendedProps);
       attendanceRange.hidden = true;
+      dialog.close();
       calendar.refetchEvents();
       setStatus("Teil-Zusage gespeichert.", false);
     } catch (error) {
@@ -469,6 +561,7 @@
       event.extendedProps.my_attendance = attendance;
       renderAttendance(event, event.extendedProps);
       attendanceRange.hidden = true;
+      dialog.close();
       calendar.refetchEvents();
       setStatus("Absage gespeichert.", false);
     } catch (error) {
@@ -498,6 +591,35 @@
     } catch (error) {
       setStatus(error.message, true);
     }
+  });
+
+  async function saveResolution(display, message) {
+    if (!editingEvent) {
+      return;
+    }
+    try {
+      await api(editingEvent.extendedProps.resolution_url, "POST", {
+        display: display,
+      });
+      dialog.close();
+      calendar.refetchEvents();
+      setStatus(message, false);
+      editingEvent = null;
+    } catch (error) {
+      setStatus(error.message, true);
+    }
+  }
+
+  resolveAcceptButton.addEventListener("click", function () {
+    saveResolution("angenommen", "Der Termin findet statt.");
+  });
+
+  resolveDeclineButton.addEventListener("click", function () {
+    saveResolution("abgesagt", "Der Termin fällt aus.");
+  });
+
+  resolveClearButton.addEventListener("click", function () {
+    saveResolution("", "Der Termin bleibt offen.");
   });
 
   cancelButton.addEventListener("click", function () {

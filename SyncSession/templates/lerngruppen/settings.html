@@ -4,15 +4,30 @@
 {% block page_class %}wide{% endblock %}
 
 {% block content %}
-  <p class="hint"><a href="{% url 'group_calendar' group.pk %}">Zurück zum Kalender</a></p>
+  <p class="settings-back">
+    <a class="button secondary" href="{% url 'group_calendar' group.pk %}">Zurück zum Kalender</a>
+  </p>
   <section class="card">
     <h1>{{ group.name }}</h1>
     <p>Erstellt von {{ group.created_by.get_full_name|default:group.created_by.username }}.</p>
 
     {% if can_invite %}
+      {% if invite %}
+        <p>Der Link ist 48 Stunden gültig und kann von mehreren Personen genutzt werden. Gültig bis {{ invite.expires_at|date:"d.m.Y H:i" }}.</p>
+        <label for="join-url">Einladungslink</label>
+        <div class="link-row">
+          <input id="join-url" type="text" value="{{ join_url }}" readonly>
+          <button type="button" class="copy-button" id="copy-link">Kopieren</button>
+        </div>
+        <div class="qr-wrap">
+          <div class="qr">
+            {{ qr_svg|safe }}
+          </div>
+        </div>
+      {% endif %}
       <form method="post" action="{% url 'create_invite' group.pk %}">
         {% csrf_token %}
-        <button type="submit">Einladungslink erzeugen</button>
+        <button type="submit">{% if invite %}Neuen Link erzeugen{% else %}Einladungslink erzeugen{% endif %}</button>
       </form>
     {% endif %}
 
@@ -50,7 +65,8 @@
           {% if is_creator and membership.user_id != group.created_by_id %}
             <form method="post" action="{% url 'remove_member' group.pk membership.user_id %}">
               {% csrf_token %}
-              <button type="submit" class="remove-member" data-confirm="{{ membership.user.get_full_name|default:membership.user.username }} wirklich entfernen?">Entfernen</button>
+              <input type="hidden" name="termine" value="">
+              <button type="button" class="remove-member" data-member-name="{{ membership.user.get_full_name|default:membership.user.username }}">Entfernen</button>
             </form>
           {% endif %}
         </li>
@@ -58,9 +74,73 @@
     </ul>
   </section>
   {% if is_creator %}
-    <script>
+    <dialog class="confirm-dialog remove-dialog" id="remove-member-dialog">
+      <div class="confirm-box">
+        <p id="remove-member-title"></p>
+        <p class="remove-member-question" id="remove-member-question"></p>
+        <div class="remove-choice">
+          <button type="button" id="remove-keep">Termine behalten</button>
+          <button type="button" id="remove-delete">Termine löschen</button>
+          <button type="button" id="remove-cancel">Abbrechen</button>
+        </div>
+      </div>
+    </dialog>
+  {% endif %}
+  <script>
+    {% if is_creator %}
       document.getElementById("{{ settings_form.members_can_invite.id_for_label }}")
         ?.addEventListener("change", function () { this.form.submit(); });
-    </script>
-  {% endif %}
+    {% endif %}
+    (function () {
+      const dialog = document.getElementById("remove-member-dialog");
+      if (!dialog) return;
+      const title = document.getElementById("remove-member-title");
+      const question = document.getElementById("remove-member-question");
+      let form = null;
+
+      dialog.addEventListener("click", function (event) {
+        if (event.target === dialog) dialog.close();
+      });
+
+      document.querySelectorAll(".remove-member").forEach(function (button) {
+        button.addEventListener("click", function () {
+          form = button.closest("form");
+          const name = button.getAttribute("data-member-name") || "dieses Mitglied";
+          title.textContent = name + " aus der Gruppe entfernen?";
+          question.textContent = "Was soll mit den Terminen von " + name + " passieren?";
+          dialog.showModal();
+        });
+      });
+
+      function choose(value) {
+        if (!form) return;
+        form.querySelector("input[name=termine]").value = value;
+        dialog.close();
+        form.requestSubmit();
+      }
+
+      document.getElementById("remove-keep").addEventListener("click", function () {
+        choose("behalten");
+      });
+      document.getElementById("remove-delete").addEventListener("click", function () {
+        choose("loeschen");
+      });
+      document.getElementById("remove-cancel").addEventListener("click", function () {
+        dialog.close();
+      });
+    })();
+
+    document.getElementById("copy-link")?.addEventListener("click", async function () {
+      const input = document.getElementById("join-url");
+      const button = this;
+      try {
+        await navigator.clipboard.writeText(input.value);
+      } catch {
+        input.select();
+        document.execCommand("copy");
+      }
+      button.textContent = "Kopiert";
+      setTimeout(function () { button.textContent = "Kopieren"; }, 1500);
+    });
+  </script>
 {% endblock %}

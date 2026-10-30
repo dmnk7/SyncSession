@@ -1,8 +1,7 @@
 EVENT_COLORS = [
     "#1f77b4",  # blau
     "#ff7f0e",  # orange
-    "#2ca02c",  # grün
-    "#d62728",  # rot
+    "#1b4a38",  # dunkelgrün, klar dunkler als das Annahme-Grün
     "#9467bd",  # violett
     "#8c564b",  # braun
     "#e377c2",  # pink
@@ -14,9 +13,13 @@ CARD_COLOR = "#fffdf8"
 
 TINT_RATIO = 0.88
 
-CONSENSUS_COLOR = "#215544"
+CONSENSUS_COLOR = "#347864"
 
-CONSENSUS_BACKGROUND = "#e7f3ec"
+CONSENSUS_BACKGROUND = "#e8f5f0"
+
+DECLINED_COLOR = "#9f1d1d"
+
+DECLINED_BACKGROUND = "#f8e8e8"
 
 
 def color_for_user(user_id):

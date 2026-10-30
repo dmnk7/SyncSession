@@ -32,6 +32,23 @@ class Session(models.Model):
         choices=KIND_CHOICES,
         default=KIND_VORSCHLAG,
     )
+    DISPLAY_ANGENOMMEN = "angenommen"
+    DISPLAY_ABGESAGT = "abgesagt"
+    DISPLAY_CHOICES = [
+        (DISPLAY_ANGENOMMEN, "Angenommen"),
+        (DISPLAY_ABGESAGT, "Abgesagt"),
+    ]
+    display_override = models.CharField(
+        "Festgelegte Darstellung",
+        max_length=12,
+        blank=True,
+        default="",
+        choices=DISPLAY_CHOICES,
+        help_text=(
+            "Nur bei gemischten Rückmeldungen: der Ersteller legt fest, "
+            "ob der Termin als angenommen oder abgesagt erscheint."
+        ),
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
