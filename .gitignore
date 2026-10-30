@@ -21,3 +21,9 @@ staticfiles/
 
 # OS
 .DS_Store
+# Playwright CLI output (may contain credentials)
+.playwright-cli/
+.playwright
+
+
+DEMO_USER.md
