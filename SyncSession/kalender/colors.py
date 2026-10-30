@@ -1,7 +1,7 @@
 EVENT_COLORS = [
     "#1f77b4",  # blau
     "#ff7f0e",  # orange
-    "#1b4a38",  # dunkelgrün, klar dunkler als das Annahme-Grün
+    "#1b4a38",  # dunkelgrün, klar unterscheidbar vom Zusage-Grün
     "#9467bd",  # violett
     "#8c564b",  # braun
     "#e377c2",  # pink
@@ -9,7 +9,7 @@ EVENT_COLORS = [
     "#bcbd22",  # oliv
 ]
 
-CARD_COLOR = "#fffdf8"
+CARD_COLOR = "#ffffff"
 
 TINT_RATIO = 0.88
 

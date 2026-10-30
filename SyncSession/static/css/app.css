@@ -1,10 +1,17 @@
 :root {
-  --bg: #f3efe6;
-  --card: #fffdf8;
-  --text: #1f1b16;
-  --muted: #5c554c;
-  --line: #ddd4c6;
-  --accent: #215544;
+  --bg: #ffffff;
+  --card: #ffffff;
+  --text: #000000;
+  --muted: #5e6266;
+  --line: #e4eaed;
+  --accent: #ff0350;
+  --accent-dark: #d60243;
+  --surface: #f0f4f7;
+  --success: #347864;
+  --success-bg: #e8f5f0;
+  --danger: #9f1d1d;
+  --danger-bg: #f8e8e8;
+  --radius: 5px;
 }
 
 * {
@@ -14,7 +21,8 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 17px;
   color: var(--text);
   background: var(--bg);
 }
@@ -129,10 +137,10 @@ button.remove-member {
   width: auto;
   margin: 0;
   padding: 0.25rem 0.65rem;
-  border: 1px solid #e3b6b6;
-  border-radius: 8px;
+  border: 1px solid #f0b8c2;
+  border-radius: var(--radius);
   background: transparent;
-  color: #9f1d1d;
+  color: var(--danger);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -154,9 +162,9 @@ button.remove-member {
   margin-top: 0;
   padding: 0.55rem 0.9rem;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius);
   background: var(--accent);
-  color: #fff;
+  color: var(--text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -187,9 +195,9 @@ a.button,
   margin-top: 0.5rem;
   padding: 0.7rem 1rem;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius);
   background: var(--accent);
-  color: #fff;
+  color: var(--text);
   font: inherit;
   font-weight: 600;
   text-align: center;
@@ -216,11 +224,11 @@ a.button.secondary,
 
 .error-text,
 .messages .error {
-  color: #9f1d1d;
+  color: var(--danger);
 }
 
 .messages .error {
-  background: #f8e8e8;
+  background: var(--danger-bg);
 }
 
 .card {
@@ -232,7 +240,21 @@ a.button.secondary,
 
 h1 {
   margin: 0 0 0.4rem;
-  font-size: 1.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+h1::after {
+  content: "";
+  display: block;
+  width: 3rem;
+  height: 3px;
+  margin-top: 0.3rem;
+  background: var(--accent);
+}
+
+.calendar-head h1::after {
+  margin-top: 0.4rem;
 }
 
 p,
@@ -263,39 +285,44 @@ button[type="submit"] {
   margin-top: 0.5rem;
   padding: 0.7rem 1rem;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius);
   background: var(--accent);
-  color: #fff;
+  color: var(--text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
 
 button[type="submit"].danger {
-  background: #9f1d1d;
+  background: var(--danger);
+  color: #fff;
+}
+
+nav button[type="submit"] {
+  color: #fff;
 }
 
 button[type="submit"].remove-member {
   width: auto;
   margin: 0;
   padding: 0.25rem 0.65rem;
-  border: 1px solid #e3b6b6;
+  border: 1px solid #f0b8c2;
   background: transparent;
-  color: #9f1d1d;
+  color: var(--danger);
 }
 
 .errorlist {
   margin: 0.3rem 0;
   padding-left: 1.1rem;
-  color: #9f1d1d;
+  color: var(--danger);
 }
 
 .messages {
   margin: 0 0 1rem;
   padding: 0.75rem 1rem;
   list-style: none;
-  background: #e7f3ec;
-  border-radius: 8px;
+  background: var(--surface);
+  border-radius: var(--radius);
 }
 
 .helptext {
@@ -314,7 +341,7 @@ button[type="submit"].remove-member {
 }
 
 .confirm-dialog::backdrop {
-  background: rgba(31, 27, 22, 0.4);
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .confirm-box {
@@ -341,7 +368,7 @@ button[type="submit"].remove-member {
   width: auto;
   margin: 0;
   padding: 0.65rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -355,7 +382,7 @@ button[type="submit"].remove-member {
 
 .confirm-dialog .confirm-ok {
   border: 0;
-  background: #9f1d1d;
+  background: var(--danger);
   color: #fff;
 }
 
@@ -379,7 +406,7 @@ button[type="submit"].remove-member {
   width: 100%;
   margin: 0;
   padding: 0.7rem 0.9rem;
-  border-radius: 8px;
+  border-radius: var(--radius);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -393,7 +420,7 @@ button[type="submit"].remove-member {
 
 #remove-delete {
   border: 0;
-  background: #9f1d1d;
+  background: var(--danger);
   color: #fff;
 }
 
@@ -460,40 +487,141 @@ button[type="submit"].remove-member {
   white-space: nowrap;
 }
 
+.calendar-head .button.secondary {
+  padding: 0.55rem 1.1rem;
+  border: 0;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.calendar-head .button.secondary:hover {
+  background: #dbe2e8;
+}
+
 #calendar-status {
   margin: 0 0 0.75rem;
   padding: 0.55rem 0.85rem;
-  border-radius: 8px;
-  background: #e7f3ec;
+  border-radius: var(--radius);
+  background: var(--surface);
   color: var(--text);
 }
 
 #calendar-status.error-text {
-  background: #f8e8e8;
+  background: var(--danger-bg);
 }
 
 #kalender {
   --fc-page-bg-color: var(--card);
   --fc-border-color: var(--line);
-  --fc-button-bg-color: var(--accent);
-  --fc-button-border-color: var(--accent);
-  --fc-button-hover-bg-color: #1a4537;
-  --fc-button-hover-border-color: #1a4537;
-  --fc-button-active-bg-color: #1a4537;
-  --fc-button-active-border-color: #1a4537;
+  --fc-button-bg-color: transparent;
+  --fc-button-border-color: transparent;
+  --fc-button-text-color: var(--text);
+  --fc-button-hover-bg-color: transparent;
+  --fc-button-hover-border-color: transparent;
+  --fc-button-active-bg-color: var(--accent);
+  --fc-button-active-border-color: var(--accent);
   --fc-event-border-color: var(--accent);
-  --fc-event-bg-color: #e8f5f0;
+  --fc-event-bg-color: var(--surface);
   --fc-event-text-color: var(--text);
-  --fc-today-bg-color: rgba(52, 120, 100, 0.06);
-  --fc-highlight-color: rgba(52, 120, 100, 0.15);
+  --fc-today-bg-color: rgba(255, 3, 80, 0.04);
+  --fc-highlight-color: rgba(255, 3, 80, 0.12);
   padding: 0.75rem 0.75rem 0.25rem;
   border: 0;
   background: transparent;
   font-size: 0.9rem;
 }
 
-#kalender .fc {
-  font-family: inherit;
+#kalender .fc-button {
+  box-shadow: none;
+  font-weight: 500;
+  text-transform: none;
+  border-radius: var(--radius);
+  padding: 0.4rem 0.85rem;
+}
+
+#kalender .fc-button:not(:disabled):hover:not(.fc-button-active),
+#kalender .fc-button:not(:disabled):focus-visible:not(.fc-button-active) {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: none;
+}
+
+#kalender .fc-button:not(:disabled):active,
+#kalender .fc-button.fc-button-active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: none;
+}
+
+#kalender .fc-button:disabled {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+  opacity: 0.55;
+}
+
+/* Wochen-/Monatswahl als graues Segment-Element, aktiv rot */
+
+#kalender .fc-toolbar-chunk:has(.fc-timeGridWeek-button) {
+  gap: 3px;
+  padding: 3px;
+  background: var(--surface);
+  border-radius: 7px;
+}
+
+#kalender .fc-toolbar-chunk:has(.fc-timeGridWeek-button) .fc-button {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+#kalender .fc-toolbar-chunk:has(.fc-timeGridWeek-button) .fc-button:not(:disabled):hover:not(.fc-button-active),
+#kalender .fc-toolbar-chunk:has(.fc-timeGridWeek-button) .fc-button:not(:disabled):focus-visible:not(.fc-button-active) {
+  background: transparent;
+  color: var(--accent);
+}
+
+#kalender .fc-toolbar-chunk:has(.fc-timeGridWeek-button) .fc-button:not(:disabled):active,
+#kalender .fc-toolbar-chunk:has(.fc-timeGridWeek-button) .fc-button.fc-button-active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Vor/Zurück-Pfeile schlicht, ohne Hintergrund */
+
+#kalender .fc-prev-button,
+#kalender .fc-next-button {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 1.1rem;
+  padding: 0.4rem 0.5rem;
+}
+
+#kalender .fc-prev-button:not(:disabled):hover,
+#kalender .fc-next-button:not(:disabled):hover,
+#kalender .fc-prev-button:not(:disabled):focus,
+#kalender .fc-next-button:not(:disabled):focus {
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* Titel: fette Kalenderwoche, Datumsbereich grau */
+
+#kalender .fc-toolbar-title {
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+#kalender .fc-toolbar-title .title-kw {
+  font-weight: 700;
+}
+
+#kalender .fc-toolbar-title .title-range {
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 0.4rem;
 }
 
 #kalender .fc-event {
@@ -519,7 +647,7 @@ button[type="submit"].remove-member {
 }
 
 .session-dialog::backdrop {
-  background: rgba(31, 27, 22, 0.4);
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .session-box {
@@ -545,9 +673,9 @@ button[type="submit"].remove-member {
   margin: 0;
   padding: 0.65rem 0.9rem;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius);
   background: var(--accent);
-  color: #fff;
+  color: var(--text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -561,7 +689,7 @@ button[type="submit"].remove-member {
 
 .session-actions button.danger {
   border: 0;
-  background: #9f1d1d;
+  background: var(--danger);
   color: #fff;
 }
 
@@ -616,11 +744,11 @@ button[type="submit"].remove-member {
 }
 
 #kalender .tally-yes {
-  color: #347864;
+  color: var(--success);
 }
 
 #kalender .tally-no {
-  color: #9f1d1d;
+  color: var(--danger);
 }
 
 #kalender .fc-event.session-blockiert {
@@ -628,8 +756,8 @@ button[type="submit"].remove-member {
     45deg,
     transparent,
     transparent 5px,
-    rgba(255, 253, 248, 0.55) 5px,
-    rgba(255, 253, 248, 0.55) 10px
+    rgba(255, 255, 255, 0.55) 5px,
+    rgba(255, 255, 255, 0.55) 10px
   );
   border-style: solid;
 }
@@ -670,7 +798,7 @@ button[type="submit"].remove-member {
   margin: 0;
   padding: 0.55rem 0.75rem;
   border: 1px solid var(--accent);
-  border-radius: 8px;
+  border-radius: var(--radius);
   background: transparent;
   color: var(--accent);
   font: inherit;
@@ -679,8 +807,8 @@ button[type="submit"].remove-member {
 }
 
 .attendance-actions button.danger {
-  border-color: #9f1d1d;
-  color: #9f1d1d;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .attendance-actions button.secondary {
@@ -693,9 +821,9 @@ button[type="submit"].remove-member {
   margin-top: 0.25rem;
   padding: 0.6rem 0.9rem;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius);
   background: var(--accent);
-  color: #fff;
+  color: var(--text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -710,7 +838,7 @@ button[type="submit"].remove-member {
   padding: 0.95rem 1rem 0.85rem;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #f6f1e6;
+  background: var(--surface);
 }
 
 .decision h3 {
@@ -734,7 +862,7 @@ button[type="submit"].remove-member {
   margin: 0;
   padding: 0.7rem 0.9rem;
   border: 1px solid var(--accent);
-  border-radius: 8px;
+  border-radius: var(--radius);
   background: var(--card);
   color: var(--accent);
   font: inherit;
@@ -744,16 +872,16 @@ button[type="submit"].remove-member {
 
 .decision-actions button.is-chosen {
   background: var(--accent);
-  color: #fff;
+  color: var(--text);
 }
 
 #resolve-decline {
-  border-color: #9f1d1d;
-  color: #9f1d1d;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 #resolve-decline.is-chosen {
-  background: #9f1d1d;
+  background: var(--danger);
   color: #fff;
 }
 

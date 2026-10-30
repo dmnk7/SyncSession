@@ -355,6 +355,32 @@
     return item;
   }
 
+  function isoWeekNumber(date) {
+    const target = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+    );
+    const day = target.getUTCDay() || 7;
+    target.setUTCDate(target.getUTCDate() + 4 - day);
+    const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+    return Math.ceil(((target - yearStart) / 86400000 + 1) / 7);
+  }
+
+  function renderTitle(info) {
+    const titleEl = container.querySelector(".fc-toolbar-title");
+    if (!titleEl) return;
+    if (info.view.type !== "timeGridWeek") {
+      titleEl.textContent = info.view.title;
+      return;
+    }
+    const kw = document.createElement("span");
+    kw.className = "title-kw";
+    kw.textContent = "KW " + isoWeekNumber(info.view.currentStart);
+    const range = document.createElement("span");
+    range.className = "title-range";
+    range.textContent = info.view.title;
+    titleEl.replaceChildren(kw, range);
+  }
+
   calendar = new FullCalendar.Calendar(container, {
     locale: "de",
     initialView: "timeGridWeek",
@@ -363,6 +389,7 @@
       center: "title",
       right: "timeGridWeek,dayGridMonth",
     },
+    datesSet: renderTitle,
     firstDay: 1,
     allDaySlot: false,
     height: "75vh",
