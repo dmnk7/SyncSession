@@ -1,8 +1,13 @@
+import secrets
 from datetime import timedelta
 
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+
+
+def new_calendar_token():
+    return secrets.token_urlsafe(32)
 
 
 class LearningGroup(models.Model):
@@ -15,6 +20,12 @@ class LearningGroup(models.Model):
     members_can_invite = models.BooleanField(
         "Alle Mitglieder dürfen einladen",
         default=False,
+    )
+    calendar_token = models.CharField(
+        max_length=64,
+        unique=True,
+        default=new_calendar_token,
+        editable=False,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     members = models.ManyToManyField(

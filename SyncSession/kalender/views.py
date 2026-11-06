@@ -341,6 +341,13 @@ def _member_or_403(request, group):
     return _json_error("Du gehörst nicht zu dieser Lerngruppe.", status=403)
 
 
+@require_GET
+def calendar_feed(request, token):
+    from .feed import calendar_response
+
+    return calendar_response(token)
+
+
 @login_required
 def group_calendar(request, pk):
     group = get_object_or_404(LearningGroup, pk=pk)

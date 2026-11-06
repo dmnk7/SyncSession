@@ -49,15 +49,18 @@ nav {
   gap: 0.85rem;
 }
 
-nav a {
+nav a:not(.account-link) {
   color: var(--accent);
 }
 
-nav a.account-link,
-nav a.account-link:hover,
-nav a.account-link:visited {
-  color: var(--text);
-  font-weight: 400;
+a.account-link,
+a.account-link:link,
+a.account-link:visited,
+a.account-link:hover,
+a.account-link:active,
+a.account-link:focus {
+  color: #000;
+  font-weight: inherit;
   text-decoration: none;
 }
 
@@ -163,6 +166,10 @@ button.remove-member {
 .link-row input {
   flex: 1;
   min-width: 0;
+}
+
+.link-row + label {
+  margin-top: 0.9rem;
 }
 
 .copy-button {

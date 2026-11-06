@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}?v=4">
     {% block extra_head %}{% endblock %}
   </head>
   <body>
@@ -16,7 +16,7 @@
       <a class="brand" href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'landing' %}{% endif %}">SyncSession</a>
       <nav>
         {% if user.is_authenticated %}
-          <a class="account-link" href="{% url 'profile' %}">{{ user.get_full_name|default:user.username }}</a>
+          <a class="account-link" href="{% url 'profile' %}" style="color:#000;text-decoration:none">{{ user.get_full_name|default:user.username }}</a>
           <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
             <button type="submit">Abmelden</button>

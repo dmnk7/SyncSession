@@ -55,6 +55,7 @@ class Session(models.Model):
         related_name="created_sessions",
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["start"]

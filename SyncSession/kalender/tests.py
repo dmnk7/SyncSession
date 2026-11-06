@@ -1,8 +1,9 @@
-from datetime import timedelta
+from datetime import timedelta, timezone as datetime_timezone
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.utils import timezone
+from icalendar import Calendar
 
 from lerngruppen.models import LearningGroup, Membership
 
@@ -801,3 +802,127 @@ class CalendarPageTests(CalendarTestCase):
             response, f"background: {color_for_user(self.member.id)}"
         )
         self.assertContains(response, "member")
+
+
+class CalendarFeedTests(CalendarTestCase):
+    def accept(self, user, session, start=None, end=None):
+        Attendance.objects.update_or_create(
+            session=session,
+            user=user,
+            defaults={
+                "status": "zugesagt",
+                "start": start or session.start,
+                "end": end or session.end,
+            },
+        )
+
+    def feed(self):
+        self.group.refresh_from_db()
+        return self.client.get(f"/abo/{self.group.calendar_token}.ics")
+
+    def events(self, response):
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/calendar", response["Content-Type"])
+        calendar = Calendar.from_ical(response.content)
+        return list(calendar.walk("VEVENT"))
+
+    def test_unknown_token_is_not_found(self):
+        response = self.client.get("/abo/kein-echter-token.ics")
+        self.assertEqual(response.status_code, 404)
+
+    def test_feed_is_public_and_lists_only_accepted_sessions(self):
+        accepted = self.create_session(self.owner, title="Akzeptiert", location="Raum 1")
+        self.accept(self.member, accepted)
+        self.create_session(self.owner, title="Offen")
+        declined = self.create_session(self.owner, title="Abgesagt")
+        Attendance.objects.create(session=declined, user=self.member, status="abgesagt")
+        self.create_session(
+            self.owner,
+            title="Block",
+            kind=Session.KIND_BLOCKIERT,
+            start=self.start + timedelta(days=3),
+            end=self.end + timedelta(days=3),
+        )
+
+        response = self.feed()
+        found = self.events(response)
+
+        self.assertEqual([str(event.get("summary")) for event in found], ["Akzeptiert"])
+        self.assertEqual(str(found[0].get("location")), "Raum 1")
+        self.assertEqual(str(found[0].get("uid")), f"session-{accepted.pk}@syncsession")
+        calendar = Calendar.from_ical(response.content)
+        self.assertEqual(str(calendar.get("x-wr-calname")), "Testgruppe")
+
+    def test_creator_mark_includes_a_mixed_session(self):
+        third = User.objects.create_user("thirdfeed", password="pw-third-123456")
+        Membership.objects.create(group=self.group, user=third)
+        session = self.create_session(self.owner, title="Festgelegt")
+        self.accept(third, session)
+        Attendance.objects.create(session=session, user=self.member, status="abgesagt")
+        self.assertEqual(self.events(self.feed()), [])
+        session.display_override = Session.DISPLAY_ANGENOMMEN
+        session.save(update_fields=["display_override"])
+
+        found = self.events(self.feed())
+
+        self.assertEqual(len(found), 1)
+        self.assertEqual(
+            found[0].decoded("dtstart"),
+            self.start.astimezone(datetime_timezone.utc),
+        )
+        self.assertEqual(
+            found[0].decoded("dtend"),
+            self.end.astimezone(datetime_timezone.utc),
+        )
+
+    def test_partial_acceptance_uses_the_shared_time(self):
+        session = self.create_session(self.owner, title="Teilweise")
+        shared_start = self.start + timedelta(hours=1)
+        self.accept(self.member, session, start=shared_start, end=self.end)
+
+        found = self.events(self.feed())
+
+        self.assertEqual(len(found), 1)
+        self.assertEqual(
+            found[0].decoded("dtstart"),
+            shared_start.astimezone(datetime_timezone.utc),
+        )
+        self.assertEqual(
+            found[0].decoded("dtend"),
+            self.end.astimezone(datetime_timezone.utc),
+        )
+
+    def test_changes_update_the_same_event_and_deletion_removes_it(self):
+        session = self.create_session(self.owner, title="Bewegt")
+        self.accept(self.member, session)
+        moved_start = self.start + timedelta(days=1)
+        moved_end = self.end + timedelta(days=1)
+        session.start = moved_start
+        session.end = moved_end
+        session.save()
+        Attendance.objects.filter(session=session).update(
+            start=moved_start,
+            end=moved_end,
+        )
+
+        found = self.events(self.feed())
+
+        self.assertEqual(str(found[0].get("uid")), f"session-{session.pk}@syncsession")
+        self.assertEqual(
+            found[0].decoded("dtstart"),
+            moved_start.astimezone(datetime_timezone.utc),
+        )
+
+        session.delete()
+        self.assertEqual(self.events(self.feed()), [])
+
+    def test_settings_page_offers_the_subscription(self):
+        self.group.refresh_from_db()
+        response = self.login(self.member).get(
+            f"/gruppen/{self.group.pk}/einstellungen/"
+        )
+        self.assertContains(response, f"webcal://")
+        self.assertContains(response, f"/abo/{self.group.calendar_token}.ics")
+        self.assertContains(response, "<svg")
+        self.assertNotContains(response, "Google")
+        self.assertNotContains(response, "Apple")

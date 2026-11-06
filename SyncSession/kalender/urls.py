@@ -26,4 +26,5 @@ urlpatterns = [
         views.session_resolution,
         name="session_resolution",
     ),
+    path("abo/<str:token>.ics", views.calendar_feed, name="calendar_feed"),
 ]

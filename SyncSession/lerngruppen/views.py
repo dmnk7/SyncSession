@@ -72,6 +72,12 @@ def _shareable_url(request, path):
     return url
 
 
+def _webcal_url(url):
+    parts = urlsplit(url)
+    scheme = "webcals" if parts.scheme == "https" else "webcal"
+    return urlunsplit((scheme, parts.netloc, parts.path, "", ""))
+
+
 def _qr_svg(url):
     image = qrcode.make(url, image_factory=qrcode.image.svg.SvgPathImage)
     stream = io.BytesIO()
@@ -112,6 +118,10 @@ def group_settings(request, pk):
         return denied
 
     members = group.memberships.select_related("user").order_by("joined_at")
+    calendar_https_url = _shareable_url(
+        request, reverse("calendar_feed", args=[group.calendar_token])
+    )
+    calendar_webcal_url = _webcal_url(calendar_https_url)
     can_invite = group.user_can_invite(request.user)
     invite = None
     join_url = ""
@@ -137,6 +147,8 @@ def group_settings(request, pk):
             "invite": invite,
             "join_url": join_url,
             "qr_svg": qr_svg,
+            "calendar_url": calendar_webcal_url,
+            "calendar_qr_svg": _qr_svg(calendar_webcal_url),
         },
     )
 
