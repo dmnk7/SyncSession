@@ -24,4 +24,16 @@
 
 ### Recherche
 
-- 
+#### Vorhandene Lösungen 
+##### Zeitfindung mit Umfragetools wie Doodle, Rallly
+- Beschreibung: Einer erstellt eine Umfrage mit möglichen Zeiten, die anderen stimmen ab -> alle stimmen in einem einmaligen Umfrage-Ereignis ab.
+- Vergleich zu uns:
+	- Bei uns existiert eine Gruppe, in der jeder gleichberechtigt ist
+	- jeder kann Vorschläge machen und geblockte Zeiten hinzufügen.
+	- Vorschläge können von allen akzeptiert und abgelehnt werden
+
+##### Zeitfindung mit Zeitplanungstools wie Motion
+- Beschreibung: Regeln und Verfügbarkeiten aus verbundenen Kalendern -> der Algorithmus schlägt Termine im Team vor
+- Vergleich zu uns:
+	- Weniger umfragelastig, aber jeder muss einen Kalender verbinden und das Tool sucht sich freie Slots
+	- konkrete Vorschläge aller Nutzer mit Abstimmung gibt es nicht
