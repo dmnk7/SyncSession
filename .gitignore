@@ -19,8 +19,120 @@ staticfiles/
 # Environment
 .env
 
+# Bericht: aus .env erzeugt, enthaelt E-Mail und Matrikelnummer
+bericht/autoren.tex
+bericht/Bericht_Webanwendungen.pdf
+
 # OS
 .DS_Store
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
 .playwright
+
+# LaTeX auxiliary and intermediate files
+*.aux
+*.lof
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
+
+*.dvi
+*.xdv
+*-converted-to.*
+
+# Bibliography (BibTeX / BibLaTeX / Biber)
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.run.xml
+
+# latexmk, SyncTeX, pdfsync
+*.fdb_latexmk
+*.synctex
+*.synctex(busy)
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync
+latex.out/
+
+# Beamer
+*.nav
+*.snm
+*.vrb
+
+# Glossaries and makeindex
+*.acn
+*.acr
+*.alg
+*.glg
+*.glo
+*.gls
+*.glsdefs
+*.idx
+*.ilg
+*.ind
+*.lzo
+*.lzs
+*.slg
+*.slo
+*.sls
+*.nlg
+*.nlo
+*.nls
+
+# minted, pythontex, sagetex, listings
+_minted*
+*.pyg
+*.pytxcode
+pythontex-files-*/
+*.sagetex.sage
+*.sagetex.py
+*.sagetex.scmd
+*.lol
+*.listing
+
+# Other common packages
+*.brf
+*.ent
+*.loe
+*.lox
+*.maf
+*.mlf
+*.mlt
+*.mtc[0-9]*
+*.ptc
+*.tdo
+*.thm
+*.soc
+*.loa
+*.mw
+*.auxlock
+*.dpth
+*.pdfpc
+*.upa
+*.upb
+*.wrt
+*.xdy
+*.hst
+*.ver
+*.lod
+*.xcp
+*.fff
+*.ttt
+svg-inkscape/
+
+# Editor / indent temporaries
+*.tps
+*.texpadtmp
+.texpadtmp
+TSWLatexianTemp*
+indent.log
+*.bak[0-9]*

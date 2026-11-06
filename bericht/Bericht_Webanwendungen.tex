@@ -1,0 +1,213 @@
+%%% ---------------------------------------------------------------------------------
+%%% Bericht / kurzes Paper (LaTeX)
+%%% Optisch angelehnt an das THA-Titelblatt (ohne TTZ)
+%%% ---------------------------------------------------------------------------------
+\documentclass[12pt,a4paper%
+              ,oneside
+              ,titlepage
+              ,DIV=13
+              ,headinclude
+              ,footinclude=false
+              ,parskip=half
+              ,BCOR=0mm
+              ]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\usepackage{csquotes}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{newtxtext,newtxmath,newtxtt}
+\usepackage[pass]{geometry}
+\usepackage{scrlayer-scrpage}
+\usepackage{enumitem}
+
+% --- Angaben (hier anpassen) -------------------------------------------------------
+% E-Mail und Matrikelnummer stehen in ../.env und werden nach autoren.tex
+% geschrieben (sync_autoren.py). autoren.tex wird nicht eingecheckt.
+\newcommand{\authorNameA}{Dominik Sturm}
+\newcommand{\authorNameB}{Moritz Richter}
+\newcommand{\authorNames}{\authorNameA\ und \authorNameB}
+\IfFileExists{autoren.tex}{%
+  \input{autoren.tex}%
+}{%
+  \PackageError{Bericht}{autoren.tex fehlt. Im Ordner bericht python3 sync_autoren.py ausfuehren; die Werte stehen in ../.env.}{}%
+}
+\makeatletter
+\newcommand{\ifnonempty}[1]{%
+  \expandafter\ifnonempty@aux\expandafter{#1}%
+}
+\newcommand{\ifnonempty@aux}[2]{%
+  \if\relax\detokenize{#1}\relax\else#2\fi
+}
+\makeatother
+\newcommand{\studyProgram}{Master Informatik}
+\newcommand{\faculty}{Fakultät für \\ Informatik}
+\newcommand{\docType}{Projektbericht}
+\newcommand{\docTitle}{SyncSession}
+\newcommand{\courseName}{Agile Webanwendungen mit Python}
+\newcommand{\supervisor}{Erich Seifert, Ph.D.}
+\newcommand{\universityName}{Technische Hochschule\\ Augsburg}
+\newcommand{\universityAddress}{An der Hochschule 1}
+\newcommand{\universityZip}{D-86161}
+\newcommand{\universityCity}{Augsburg}
+\newcommand{\universityPhone}{+49\,821\,5586-0}
+\newcommand{\universityFax}{+49\,821\,5586-3222}
+\newcommand{\universityURL}{www.tha.de}
+\newcommand{\universityEMail}{info@tha.de}
+
+% Datum im Format TT.MM.JJJJ, immer das Kompilierdatum
+\newcommand{\numericToday}{%
+  \ifnum\day<10 0\fi\the\day.%
+  \ifnum\month<10 0\fi\the\month.%
+  \the\year
+}
+
+% --- THA-Farben --------------------------------------------------------------------
+\definecolor{THAred}{RGB}{255,3,80}
+
+\usepackage[
+    backend=biber,
+    style=numeric,
+    sorting=nyt,
+    sortlocale=de_DE,
+    natbib=true,
+    url=true,
+    isbn=false,
+    eprint=false,
+    bibencoding=utf8,
+    maxbibnames=99,
+    maxcitenames=2,
+]{biblatex}
+\addbibresource{literatur.bib}
+\renewcommand{\bibfont}{\footnotesize}
+
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  allcolors=THAred,
+  linktocpage,
+  pdftitle={\docTitle},
+  pdfauthor={\authorNames},
+}
+
+\graphicspath{{img/}}
+
+\setkomafont{sectioning}{\sffamily}
+\newcommand*\tocentryformat[1]{{\sffamily#1}}
+\RedeclareSectionCommands
+  [
+    tocentryformat=\tocentryformat,
+    tocpagenumberformat=\tocentryformat
+  ]
+  {section,subsection,subsubsection,paragraph,subparagraph}
+
+\pagestyle{scrheadings}
+\ihead{\headmark}
+\chead{}
+\ohead{}
+\cfoot{\pagemark}
+\renewcommand{\headfont}{\normalfont\sffamily}
+\setkomafont{pagenumber}{\normalfont\sffamily}
+\setstretch{1.0}
+\setlist{nosep}
+
+% --- Titelblatt (THA-Layout, ohne TTZ) ---------------------------------------------
+\newcommand{\berichttitlepage}{%
+\begingroup
+\newcommand*{\THAfont}{\fontfamily{phv}\selectfont}
+\newgeometry{left=27mm, right=15mm, top=20mm, head=0mm, textheight=276mm}
+\begin{titlepage}
+\THAfont
+\setlength{\parindent}{0pt}%
+\noindent\begin{minipage}[t]{125mm}
+\hspace{-0.2cm}\includegraphics[width=60mm]{Logo}
+\end{minipage}\hfill%
+\begin{minipage}[t]{40mm}
+\setlength{\parindent}{0pt}%
+\vspace{-1.3cm}
+{\color{THAred}\fontsize{12}{12}\selectfont\textbf{\faculty}}
+\vspace{25mm}% Abstand ohne TTZ-Block
+\end{minipage}
+
+\vspace{35mm}
+
+\noindent\begin{minipage}[t]{125mm}
+{\color{THAred}\fontsize{18}{18}\selectfont\textbf{\docType}}\\[0.5ex]
+{\fontsize{12}{18}\selectfont{\small im Rahmen der Lehrveranstaltung}\\[0.1ex]
+\courseName}
+
+\vspace{25mm}
+
+{\fontsize{15}{18}\selectfont{\small erstellt von}\ \authorNames}
+\end{minipage}
+
+\vspace{35mm}
+
+\hfill
+\begin{minipage}[t]{40mm}
+\fontsize{7}{10}\selectfont
+\textbf{\authorNameA}\\[3mm]
+\authorEMailA
+\ifnonempty{\authorEnrolmentNoA}{\\Matrikelnummer: \authorEnrolmentNoA}
+\vspace{5mm}
+
+\textbf{\authorNameB}\\[3mm]
+\authorEMailB
+\ifnonempty{\authorEnrolmentNoB}{\\Matrikelnummer: \authorEnrolmentNoB}
+\end{minipage}
+
+\vspace{14mm}
+
+\noindent\begin{minipage}[t]{125mm}
+\fontsize{11}{18}\selectfont
+\begin{tabular}[t]{ll}
+    \toprule
+    Dozent              & \supervisor \\
+    Studiengang         & \studyProgram \\
+    Lehrveranstaltung   & \courseName \\
+    Abgegeben am        & \numericToday \\
+    \bottomrule
+\end{tabular}
+\end{minipage}\hfill%
+\begin{minipage}[t]{40mm}
+\fontsize{7}{10}\selectfont
+{\color{THAred}\textbf{\universityName}\\[3mm]}%
+\universityAddress \\
+\universityZip\ \universityCity \\
+T\ \universityPhone \\
+F\ \universityFax \\
+\universityURL \\
+\universityEMail
+\end{minipage}
+\end{titlepage}
+\endgroup
+\restoregeometry
+}
+
+%%% ---------------------------------------------------------------------------------
+\begin{document}
+
+\pagenumbering{Alph}
+\berichttitlepage
+
+\clearpage
+\pagenumbering{Roman}
+\tableofcontents
+\clearpage
+
+\pagenumbering{arabic}
+
+\input{kapitel/01_Einleitung}
+\input{kapitel/02_Grundlagen}
+\input{kapitel/03_Umsetzung}
+\input{kapitel/04_Fazit}
+
+\renewcommand{\bibfont}{\footnotesize}
+\printbibliography[title={Quellenverzeichnis}, heading=bibintoc]
+
+\end{document}
