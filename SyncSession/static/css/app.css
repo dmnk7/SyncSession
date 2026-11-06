@@ -851,6 +851,17 @@ button[type="submit"].remove-member {
   color: var(--danger);
 }
 
+.attendance-actions button:disabled,
+.attendance-actions button.danger:disabled,
+.attendance-actions.is-locked button,
+.attendance-actions.is-locked button.danger {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: default;
+  pointer-events: none;
+}
+
 .attendance-actions button.secondary {
   border-color: var(--line);
   color: var(--text);
@@ -940,4 +951,17 @@ button[type="submit"].remove-member {
 
 .decision-reset[hidden] {
   display: none;
+}
+
+.decision.is-locked .decision-actions button,
+.decision.is-locked .decision-actions button.is-chosen,
+.decision.is-locked #resolve-decline,
+.decision.is-locked #resolve-decline.is-chosen,
+.decision.is-locked .decision-reset {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: default;
+  pointer-events: none;
+  text-decoration: none;
 }

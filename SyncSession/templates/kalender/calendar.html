@@ -71,7 +71,8 @@
         <div id="attendance-section" hidden>
           <h3>Deine Teilnahme</h3>
           <p class="hint" id="attendance-state">Noch keine Rückmeldung.</p>
-          <div class="attendance-actions">
+          <p class="hint" id="attendance-past" hidden>Termin ist bereits in der Vergangenheit.</p>
+          <div class="attendance-actions" id="attendance-actions">
             <button type="button" id="accept-full">Zusagen</button>
             <button type="button" id="accept-partial">Teilweise</button>
             <button type="button" id="decline" class="danger">Absagen</button>
@@ -92,6 +93,7 @@
 
         <div id="resolution-section" class="decision" hidden>
           <h3>Was soll mit dem Termin passieren?</h3>
+          <p class="hint" id="resolution-past" hidden>Termin ist bereits in der Vergangenheit.</p>
           <p class="decision-tally" id="resolution-tally"></p>
           <div class="decision-actions" id="resolution-actions">
             <button type="button" id="resolve-accept">Findet statt</button>
@@ -111,5 +113,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/de.global.min.js"></script>
-  <script src="{% static 'js/kalender.js' %}"></script>
+  <script src="{% static 'js/kalender.js' %}?v=4"></script>
 {% endblock %}

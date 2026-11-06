@@ -30,6 +30,8 @@
   const attendanceSection = document.getElementById("attendance-section");
   const attendanceState = document.getElementById("attendance-state");
   const attendanceList = document.getElementById("attendance-list");
+  const attendancePast = document.getElementById("attendance-past");
+  const attendanceActions = document.getElementById("attendance-actions");
   const attendanceRange = document.getElementById("attendance-range");
   const attendanceStart = document.getElementById("attendance-start");
   const attendanceEnd = document.getElementById("attendance-end");
@@ -37,6 +39,7 @@
   const acceptPartialButton = document.getElementById("accept-partial");
   const attendanceSaveButton = document.getElementById("attendance-save");
   const declineButton = document.getElementById("decline");
+  const resolutionPast = document.getElementById("resolution-past");
   const resolutionSection = document.getElementById("resolution-section");
   const resolutionTally = document.getElementById("resolution-tally");
   const resolveAcceptButton = document.getElementById("resolve-accept");
@@ -219,6 +222,12 @@
     if (!mixed) {
       return;
     }
+    const locked = sessionIsPast(props.session_start);
+    resolutionSection.classList.toggle("is-locked", locked);
+    resolutionPast.hidden = !locked;
+    resolveAcceptButton.disabled = locked;
+    resolveDeclineButton.disabled = locked;
+    resolveClearButton.disabled = locked;
     const override = props.display_override || "";
     resolutionTally.textContent =
       countLabel(props.accepted_count, "Zusage", "Zusagen") +
@@ -235,6 +244,17 @@
       override === "abgesagt" ? "true" : "false"
     );
     resolveClearButton.hidden = !override;
+  }
+
+  function sessionIsPast(iso) {
+    if (!iso) {
+      return false;
+    }
+    const start = new Date(iso);
+    const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return startDay < today;
   }
 
   function openCreateDialog(selection) {
@@ -297,6 +317,12 @@
     attendanceRange.hidden = true;
     if (!isBlock) {
       attendanceSection.hidden = own;
+      const locked = sessionIsPast(props.session_start);
+      acceptFullButton.disabled = locked;
+      acceptPartialButton.disabled = locked;
+      declineButton.disabled = locked;
+      attendanceActions.classList.toggle("is-locked", locked);
+      attendancePast.hidden = !locked;
       renderAttendance(event, props);
       renderResolution(props);
     } else {
@@ -505,7 +531,7 @@
   });
 
   acceptFullButton.addEventListener("click", async function () {
-    if (!editingEvent) {
+    if (!editingEvent || acceptFullButton.disabled) {
       return;
     }
     const event = editingEvent;
@@ -528,7 +554,7 @@
   });
 
   acceptPartialButton.addEventListener("click", function () {
-    if (!editingEvent) {
+    if (!editingEvent || acceptPartialButton.disabled) {
       return;
     }
     const event = editingEvent;
@@ -577,7 +603,7 @@
   });
 
   declineButton.addEventListener("click", async function () {
-    if (!editingEvent) {
+    if (!editingEvent || declineButton.disabled) {
       return;
     }
     const event = editingEvent;
@@ -621,7 +647,7 @@
   });
 
   async function saveResolution(display, message) {
-    if (!editingEvent) {
+    if (!editingEvent || resolveAcceptButton.disabled) {
       return;
     }
     try {

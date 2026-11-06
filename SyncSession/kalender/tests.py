@@ -356,6 +356,45 @@ class AttendanceTests(CalendarTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Attendance.objects.count(), 0)
 
+    def test_past_session_cannot_be_accepted_or_declined(self):
+        yesterday = timezone.localtime() - timedelta(days=1)
+        start = yesterday.replace(hour=10, minute=0, second=0, microsecond=0)
+        end = start + timedelta(hours=1)
+        session = self.create_session(self.owner, start=start, end=end)
+        client = self.login(self.member)
+
+        accept = self.zusage(client, session, start=iso(start), end=iso(end))
+        decline = client.post(
+            f"/gruppen/{self.group.pk}/termine/{session.pk}/zusage/",
+            {"status": "abgesagt"},
+            content_type="application/json",
+        )
+
+        self.assertEqual(accept.status_code, 400)
+        self.assertEqual(decline.status_code, 400)
+        self.assertEqual(Attendance.objects.count(), 0)
+        listed = client.get(f"/gruppen/{self.group.pk}/termine/")
+        match = next(item for item in listed.json() if item["id"] == session.id)
+        self.assertFalse(match["can_respond"])
+
+    def test_session_earlier_today_can_still_be_answered(self):
+        now = timezone.localtime()
+        start = now.replace(hour=0, minute=10, second=0, microsecond=0)
+        end = start + timedelta(minutes=20)
+        session = self.create_session(self.owner, start=start, end=end)
+
+        response = self.zusage(
+            self.login(self.member),
+            session,
+            start=iso(start),
+            end=iso(end),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            Attendance.objects.filter(session=session, user=self.member).exists()
+        )
+
     def test_non_member_cannot_accept(self):
         session = self.create_session(self.owner)
 
@@ -674,6 +713,20 @@ class MixedReplyTests(CalendarTestCase):
             {"display": display},
             content_type="application/json",
         )
+
+    def test_past_mixed_session_cannot_be_resolved(self):
+        yesterday = timezone.localtime() - timedelta(days=1)
+        start = yesterday.replace(hour=10, minute=0, second=0, microsecond=0)
+        end = start + timedelta(hours=1)
+        session = self.create_session(self.owner, start=start, end=end)
+        self.accept(self.member, session)
+        self.decline(self.third, session)
+
+        response = self.resolve(self.owner, session, "angenommen")
+
+        self.assertEqual(response.status_code, 400)
+        session.refresh_from_db()
+        self.assertEqual(session.display_override, "")
 
     def test_mixed_replies_stay_a_dashed_proposal_with_counts(self):
         session = self.create_session(self.owner)

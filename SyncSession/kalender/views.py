@@ -39,6 +39,12 @@ def _user_display(user):
     return user.get_full_name() or user.username
 
 
+def _can_respond(session):
+    """Zusagen gehen nur für den heutigen Tag und die Zukunft."""
+    start = timezone.localtime(session.start)
+    return start.date() >= timezone.localdate()
+
+
 def _parse_datetime(value):
     value = (value or "").strip()
     if not value:
@@ -187,6 +193,7 @@ def _session_events(session, request_user, group_pk, attendances, memberships):
         "declined_count": declined_count,
         "reply_state": reply_state,
         "display_override": display_override,
+        "can_respond": _can_respond(session),
         "update_url": reverse("session_update", args=[group_pk, session.id]),
         "delete_url": reverse("session_delete", args=[group_pk, session.id]),
         "attendance_url": reverse(
@@ -546,6 +553,11 @@ def session_attendance(request, pk, session_id):
         return _json_error(
             "Für geblockte Zeiten gibt es keine Zusage.", status=400
         )
+    if not _can_respond(session):
+        return _json_error(
+            "Vergangene Termine kannst du nicht mehr annehmen oder ablehnen.",
+            status=400,
+        )
 
     data, error = _read_json_body(request)
     if error:
@@ -610,6 +622,11 @@ def session_resolution(request, pk, session_id):
     if session.kind != Session.KIND_VORSCHLAG:
         return _json_error(
             "Für geblockte Zeiten gibt es keine Darstellung.", status=400
+        )
+    if not _can_respond(session):
+        return _json_error(
+            "Vergangene Termine kannst du nicht mehr festlegen.",
+            status=400,
         )
 
     data, error = _read_json_body(request)
