@@ -1,13 +1,14 @@
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 
 from lerngruppen.forms import GroupCreateForm
 from lerngruppen.models import LearningGroup
 
-from .forms import SignUpForm
+from .forms import AccountDeleteForm, ProfileForm, SignUpForm
 
 
 def _safe_next(request):
@@ -44,6 +45,44 @@ def landing(request):
         form = SignUpForm()
 
     return render(request, "landing.html", {"form": form, "next": next_url})
+
+
+def _profile_page(request, form=None, delete_form=None):
+    return render(
+        request,
+        "accounts/profile.html",
+        {
+            "form": form or ProfileForm(instance=request.user),
+            "delete_form": delete_form or AccountDeleteForm(request.user),
+        },
+    )
+
+
+@login_required
+def profile(request):
+    if request.method == "POST":
+        form = ProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Name gespeichert.")
+            return redirect("profile")
+        return _profile_page(request, form=form)
+
+    return _profile_page(request)
+
+
+@login_required
+@require_POST
+def delete_account(request):
+    form = AccountDeleteForm(request.user, request.POST)
+    if not form.is_valid():
+        return _profile_page(request, delete_form=form)
+
+    user = request.user
+    logout(request)
+    user.delete()
+    messages.success(request, "Konto gelöscht.")
+    return redirect("landing")
 
 
 @login_required

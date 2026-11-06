@@ -1,4 +1,6 @@
+from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.models import User
 
 
 class SignUpForm(UserCreationForm):
@@ -19,6 +21,36 @@ class SignUpForm(UserCreationForm):
         self.order_fields(
             ["first_name", "last_name", "username", "password1", "password2"]
         )
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["first_name"].label = "Vorname"
+        self.fields["first_name"].required = True
+        self.fields["last_name"].label = "Nachname"
+        self.fields["last_name"].required = True
+
+
+class AccountDeleteForm(forms.Form):
+    password = forms.CharField(
+        label="Passwort",
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError("Das Passwort ist nicht korrekt.")
+        return password
 
 
 class LoginForm(AuthenticationForm):

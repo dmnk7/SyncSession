@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Konto · SyncSession{% endblock %}
+{% block page_class %}settings-page{% endblock %}
+
+{% block content %}
+  <p class="settings-back">
+    <a class="button secondary" href="{% url 'home' %}">Zurück</a>
+  </p>
+
+  <section class="card">
+    <h1>Dein Konto</h1>
+    <p>Angemeldet als <strong>{{ user.username }}</strong>. Der Benutzername bleibt unverändert.</p>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Speichern</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Konto löschen</h2>
+    <p>Zum Löschen gib dein Passwort ein. Gruppen, die du erstellt hast, und Termine, die du angelegt hast, werden mitgelöscht.</p>
+    <form method="post" action="{% url 'delete_account' %}">
+      {% csrf_token %}
+      {{ delete_form.as_p }}
+      <button type="submit" class="danger delete" data-confirm="Konto wirklich löschen? Das lässt sich nicht rückgängig machen.">Konto löschen</button>
+    </form>
+  </section>
+{% endblock %}

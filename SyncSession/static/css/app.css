@@ -53,6 +53,14 @@ nav a {
   color: var(--accent);
 }
 
+nav a.account-link,
+nav a.account-link:hover,
+nav a.account-link:visited {
+  color: var(--text);
+  font-weight: 400;
+  text-decoration: none;
+}
+
 nav form,
 nav button {
   margin: 0;
