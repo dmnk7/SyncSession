@@ -41,7 +41,7 @@
       </form>
       <form method="post" action="{% url 'delete_group' group.pk %}">
         {% csrf_token %}
-        <button type="submit" class="danger delete" data-confirm="Lerngruppe wirklich löschen?">Gruppe löschen</button>
+        <button type="submit" class="danger" data-confirm="Lerngruppe wirklich löschen?">Gruppe löschen</button>
       </form>
     {% else %}
       <form method="post" action="{% url 'leave_group' group.pk %}">

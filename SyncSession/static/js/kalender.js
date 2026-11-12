@@ -273,6 +273,8 @@
     attendanceRange.hidden = true;
     resolutionSection.hidden = true;
     setFieldsEnabled(true);
+    submitButton.hidden = false;
+    cancelButton.textContent = "Abbrechen";
     submitButton.textContent = "Erstellen";
     startInput.value = formatLocal(selection.start);
     endInput.value = formatLocal(selection.end);
@@ -304,6 +306,8 @@
 
     dialogTitle.textContent = isBlock ? "Geblockte Zeit" : "Terminvorschlag";
 
+    submitButton.hidden = !own;
+    cancelButton.textContent = own ? "Abbrechen" : "Schließen";
     if (own) {
       readonlyEl.hidden = true;
       setFieldsEnabled(true);
@@ -312,7 +316,6 @@
     } else {
       readonlyEl.hidden = false;
       setFieldsEnabled(false);
-      submitButton.textContent = "Speichern";
     }
 
     attendanceRange.hidden = true;
@@ -527,6 +530,9 @@
 
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
+    if (editingEvent && !editingEvent.extendedProps.own) {
+      return;
+    }
     const startDate = new Date(startInput.value);
     const endDate = new Date(endInput.value);
     if (isNaN(startDate) || isNaN(endDate)) {

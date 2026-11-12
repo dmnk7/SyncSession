@@ -24,7 +24,7 @@
     <form method="post" action="{% url 'delete_account' %}">
       {% csrf_token %}
       {{ delete_form.as_p }}
-      <button type="submit" class="danger delete" data-confirm="Konto wirklich löschen? Das lässt sich nicht rückgängig machen.">Konto löschen</button>
+      <button type="submit" class="danger" data-confirm="Konto wirklich löschen? Das lässt sich nicht rückgängig machen.">Konto löschen</button>
     </form>
   </section>
 {% endblock %}

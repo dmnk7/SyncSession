@@ -74,8 +74,8 @@
           <p class="hint" id="attendance-state">Noch keine Rückmeldung.</p>
           <p class="hint" id="attendance-past" hidden>Termin ist bereits in der Vergangenheit.</p>
           <div class="attendance-actions" id="attendance-actions">
-            <button type="button" id="accept-full">Zusagen</button>
-            <button type="button" id="accept-partial">Teilweise</button>
+            <button type="button" id="accept-full" class="primary">Zusagen</button>
+            <button type="button" id="accept-partial" class="secondary">Teilweise</button>
             <button type="button" id="decline" class="danger">Absagen</button>
           </div>
           <div id="attendance-range" hidden>
@@ -114,5 +114,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/de.global.min.js"></script>
-  <script src="{% static 'js/kalender.js' %}?v=5"></script>
+  <script src="{% static 'js/kalender.js' %}?v=6"></script>
 {% endblock %}

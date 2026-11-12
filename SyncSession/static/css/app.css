@@ -9,7 +9,7 @@
   --surface: #f0f4f7;
   --success: #347864;
   --success-bg: #e8f5f0;
-  --danger: #ff2a2a;
+  --danger: #ff0350;
   --danger-bg: #fff0f0;
   --radius: 5px;
 }
@@ -148,7 +148,7 @@ button.remove-member {
   width: auto;
   margin: 0;
   padding: 0.25rem 0.65rem;
-  border: 1px solid #f0b8c2;
+  border: 1px solid var(--danger);
   border-radius: var(--radius);
   background: transparent;
   color: var(--danger);
@@ -222,9 +222,14 @@ a.button,
 
 a.button.secondary,
 .button.secondary {
-  background: transparent;
-  border: 1px solid var(--line);
+  border: 0;
+  background: var(--surface);
   color: var(--text);
+}
+
+a.button.secondary:hover,
+.button.secondary:hover {
+  background: #dbe2e8;
 }
 
 .settings-back {
@@ -235,17 +240,7 @@ a.button.secondary,
   display: inline-block;
   width: auto;
   margin: 0;
-}
-
-.settings-page button[type="submit"]:not(.remove-member),
-.settings-page .copy-button {
-  color: #fff;
-}
-
-.settings-page button[type="submit"].delete {
-  border: 1px solid var(--danger);
-  background: #fff;
-  color: var(--danger);
+  padding: 0.55rem 1.1rem;
 }
 
 .error-text,
@@ -320,8 +315,9 @@ button[type="submit"] {
 }
 
 button[type="submit"].danger {
-  background: var(--danger);
-  color: #fff;
+  border: 1px solid var(--danger);
+  background: #fff;
+  color: var(--danger);
 }
 
 nav button[type="submit"] {
@@ -518,21 +514,8 @@ button[type="submit"].remove-member {
 .calendar-head .button {
   width: auto;
   margin: 0;
-  white-space: nowrap;
-}
-
-.calendar-head .button.secondary,
-.settings-back .button.secondary {
   padding: 0.55rem 1.1rem;
-  border: 0;
-  background: var(--surface);
-  color: var(--text);
-  font-weight: 600;
-}
-
-.calendar-head .button.secondary:hover,
-.settings-back .button.secondary:hover {
-  background: #dbe2e8;
+  white-space: nowrap;
 }
 
 #calendar-status {
@@ -597,7 +580,7 @@ button[type="submit"].remove-member {
   opacity: 0.55;
 }
 
-/* Wochen-/Monatswahl als graues Segment-Element, aktiv rot */
+/* Wochen-/Monatswahl als graues Segment-Element, aktiv solid rot */
 
 #kalender .fc-toolbar-chunk:has(.fc-timeGridWeek-button) {
   gap: 3px;
@@ -837,13 +820,29 @@ button[type="submit"].remove-member {
   width: auto;
   margin: 0;
   padding: 0.55rem 0.75rem;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   background: transparent;
-  color: var(--accent);
+  color: var(--text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+}
+
+.attendance-actions button.primary {
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+}
+
+.attendance-actions button.secondary {
+  border: 0;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.attendance-actions button.secondary:hover {
+  background: #dbe2e8;
 }
 
 .attendance-actions button.danger {
@@ -860,11 +859,6 @@ button[type="submit"].remove-member {
   color: var(--muted);
   cursor: default;
   pointer-events: none;
-}
-
-.attendance-actions button.secondary {
-  border-color: var(--line);
-  color: var(--text);
 }
 
 #attendance-range button {
@@ -912,17 +906,23 @@ button[type="submit"].remove-member {
   width: 100%;
   margin: 0;
   padding: 0.7rem 0.9rem;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--card);
-  color: var(--accent);
+  color: var(--text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
 
-.decision-actions button.is-chosen {
-  background: var(--accent);
+#resolve-accept {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+#resolve-accept.is-chosen {
+  border-color: var(--success);
+  background: var(--success);
   color: #fff;
 }
 
@@ -932,6 +932,7 @@ button[type="submit"].remove-member {
 }
 
 #resolve-decline.is-chosen {
+  border-color: var(--danger);
   background: var(--danger);
   color: #fff;
 }
@@ -955,6 +956,8 @@ button[type="submit"].remove-member {
 
 .decision.is-locked .decision-actions button,
 .decision.is-locked .decision-actions button.is-chosen,
+.decision.is-locked #resolve-accept,
+.decision.is-locked #resolve-accept.is-chosen,
 .decision.is-locked #resolve-decline,
 .decision.is-locked #resolve-decline.is-chosen,
 .decision.is-locked .decision-reset {
