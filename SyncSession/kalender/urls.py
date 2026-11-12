@@ -5,6 +5,11 @@ from . import views
 urlpatterns = [
     path("gruppen/<int:pk>/", views.group_calendar, name="group_calendar"),
     path("gruppen/<int:pk>/termine/", views.session_list, name="session_list"),
+    path(
+        "gruppen/<int:pk>/termine/status/",
+        views.session_status,
+        name="session_status",
+    ),
     path("gruppen/<int:pk>/termine/neu/", views.session_create, name="session_create"),
     path(
         "gruppen/<int:pk>/termine/<int:session_id>/",

@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Prefetch, Q
+from django.db.models import Max, Prefetch, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -414,6 +414,41 @@ def session_list(request, pk):
             )
         )
     return JsonResponse(events, safe=False)
+
+
+@require_GET
+@login_required
+def session_status(request, pk):
+    """Leichter Prüf-Endpunkt fürs Polling.
+
+    Liefert den Zeitpunkt der letzten Änderung an Terminen, Rückmeldungen
+    oder Mitgliedern. Der Client refetcht die Events nur, wenn sich dieser
+    Wert seit dem letzten Poll geändert hat.
+    """
+    group = get_object_or_404(LearningGroup, pk=pk)
+    denied = _member_or_403(request, group)
+    if denied:
+        return denied
+
+    stamps = [
+        stamp
+        for stamp in (
+            Session.objects.filter(group=group).aggregate(latest=Max("updated_at"))[
+                "latest"
+            ],
+            Attendance.objects.filter(session__group=group).aggregate(
+                latest=Max("updated_at")
+            )["latest"],
+            group.memberships.aggregate(latest=Max("joined_at"))["latest"],
+        )
+        if stamp is not None
+    ]
+    return JsonResponse(
+        {
+            "updated_at": max(stamps).isoformat() if stamps else None,
+            "member_count": group.memberships.count(),
+        }
+    )
 
 
 def _repeat_weeks(data, kind):

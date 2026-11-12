@@ -54,6 +54,7 @@
   }
 
   const createUrl = container.dataset.createUrl;
+  const statusUrl = container.dataset.statusUrl;
   const csrfToken = csrfMeta.content;
 
   let calendar = null;
@@ -480,6 +481,46 @@
     },
   });
   calendar.render();
+
+  // Polling: alle 5s prüfen, ob sich serverseitig etwas geändert hat,
+  // und nur dann die Events neu laden (statt blind alle 5s zu refetchen).
+  let lastStatus = null;
+
+  async function pollStatus() {
+    if (!statusUrl || document.hidden || dialog.open) {
+      return;
+    }
+    try {
+      const response = await fetch(statusUrl, {
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) {
+        return;
+      }
+      const data = await response.json();
+      const stamp = (data.updated_at || "") + "|" + (data.member_count || 0);
+      if (lastStatus === null) {
+        // Erster Poll: Basis setzen und einmal refetchen, damit der Stand
+        // garantiert aktueller ist als der initiale Event-Fetch.
+        lastStatus = stamp;
+        calendar.refetchEvents();
+        return;
+      }
+      if (stamp !== lastStatus) {
+        lastStatus = stamp;
+        calendar.refetchEvents();
+      }
+    } catch {
+      // Netzwerkfehler ignorieren, der nächste Tick versucht es erneut.
+    }
+  }
+
+  setInterval(pollStatus, 5000);
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) {
+      pollStatus();
+    }
+  });
 
   kindVorschlag.addEventListener("change", applyKindUi);
   kindBlockiert.addEventListener("change", applyKindUi);

@@ -19,6 +19,7 @@
   <div class="calendar-shell">
     <div id="kalender"
          data-sessions-url="{% url 'session_list' group.pk %}"
+         data-status-url="{% url 'session_status' group.pk %}"
          data-create-url="{% url 'session_create' group.pk %}"></div>
     <ul class="color-legend" aria-label="Farben">
       {% for person in legend %}
@@ -113,5 +114,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/de.global.min.js"></script>
-  <script src="{% static 'js/kalender.js' %}?v=4"></script>
+  <script src="{% static 'js/kalender.js' %}?v=5"></script>
 {% endblock %}

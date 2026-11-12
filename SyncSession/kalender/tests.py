@@ -116,6 +116,60 @@ class SessionListTests(CalendarTestCase):
         self.assertNotIn(old.id, ids)
 
 
+class SessionStatusTests(CalendarTestCase):
+    def status(self, client):
+        response = client.get(f"/gruppen/{self.group.pk}/termine/status/")
+        self.assertEqual(response.status_code, 200)
+        return response.json()
+
+    def test_requires_login(self):
+        response = self.client.get(f"/gruppen/{self.group.pk}/termine/status/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_non_member_gets_no_status(self):
+        response = self.login(self.stranger).get(
+            f"/gruppen/{self.group.pk}/termine/status/"
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_member_gets_timestamp_and_member_count(self):
+        self.create_session(self.owner)
+
+        data = self.status(self.login(self.member))
+
+        self.assertIsNotNone(data["updated_at"])
+        self.assertEqual(data["member_count"], 2)
+
+    def test_attendance_change_bumps_timestamp(self):
+        session = self.create_session(self.owner)
+        before = self.status(self.login(self.member))["updated_at"]
+
+        Attendance.objects.create(
+            session=session,
+            user=self.member,
+            status="abgesagt",
+        )
+
+        after = self.status(self.login(self.member))["updated_at"]
+        self.assertGreater(after, before)
+
+    def test_new_membership_changes_member_count(self):
+        client = self.login(self.member)
+        before = self.status(client)["member_count"]
+
+        late = User.objects.create_user("spaeter", password="pw-spaeter-123456")
+        Membership.objects.create(group=self.group, user=late)
+
+        after = self.status(client)
+        self.assertEqual(after["member_count"], before + 1)
+
+    def test_calendar_page_exposes_status_url(self):
+        response = self.login(self.member).get(f"/gruppen/{self.group.pk}/")
+        self.assertContains(
+            response, f"/gruppen/{self.group.pk}/termine/status/"
+        )
+
+
 class SessionCreateTests(CalendarTestCase):
     def test_member_can_create(self):
         response = self.login(self.member).post(
