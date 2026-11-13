@@ -9,6 +9,29 @@ from kalender.models import Attendance, Session
 from lerngruppen.models import LearningGroup, Membership
 
 
+class AuthEntryTests(TestCase):
+    def test_root_sends_anonymous_users_to_login(self):
+        response = self.client.get("/")
+        self.assertRedirects(response, reverse("login"))
+
+    def test_root_sends_logged_in_users_home(self):
+        user = User.objects.create_user("anna", password="Raumplan-48")
+        self.client.force_login(user)
+        response = self.client.get("/")
+        self.assertRedirects(response, reverse("home"))
+
+    def test_signup_stays_available(self):
+        response = self.client.get(reverse("landing"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Konto erstellen")
+        self.assertContains(response, reverse("login"))
+
+    def test_login_page_links_to_signup(self):
+        response = self.client.get(reverse("login"))
+        self.assertContains(response, "Einloggen")
+        self.assertContains(response, reverse("landing"))
+
+
 class ProfileTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
@@ -86,7 +109,7 @@ class ProfileTests(TestCase):
             reverse("delete_account"),
             {"password": "Raumplan-48"},
         )
-        self.assertRedirects(response, reverse("landing"))
+        self.assertRedirects(response, reverse("login"))
         self.assertFalse(User.objects.filter(pk=self.user.pk).exists())
         self.assertFalse(LearningGroup.objects.filter(pk=self.own_group.pk).exists())
         self.assertTrue(LearningGroup.objects.filter(pk=self.other_group.pk).exists())

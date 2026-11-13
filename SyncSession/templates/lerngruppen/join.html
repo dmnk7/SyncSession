@@ -32,7 +32,7 @@
         {% csrf_token %}
         <button type="submit">Beitreten</button>
       </form>
-      <a class="button secondary" href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'landing' %}{% endif %}">Nicht beitreten</a>
+      <a class="button secondary" href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'login' %}{% endif %}">Nicht beitreten</a>
     {% endif %}
   </section>
 {% endblock %}

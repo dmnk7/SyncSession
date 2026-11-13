@@ -5,7 +5,8 @@ from .forms import LoginForm
 from . import views
 
 urlpatterns = [
-    path("", views.landing, name="landing"),
+    path("", views.root, name="root"),
+    path("konto-erstellen/", views.landing, name="landing"),
     path("home/", views.home, name="home"),
     path("konto/", views.profile, name="profile"),
     path("konto/loeschen/", views.delete_account, name="delete_account"),

@@ -276,7 +276,7 @@ def join(request, token):
         )
         if request.user.is_authenticated:
             return redirect("home")
-        return redirect("landing")
+        return redirect("login")
 
     group = invite.group
     already_member = group.is_member(request.user)

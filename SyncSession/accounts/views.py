@@ -31,6 +31,12 @@ def _safe_next(request):
     return ""
 
 
+def root(request):
+    if request.user.is_authenticated:
+        return redirect("home")
+    return redirect("login")
+
+
 def landing(request):
     next_url = _safe_next(request)
     if request.user.is_authenticated:
@@ -91,7 +97,7 @@ def delete_account(request):
     logout(request)
     user.delete()
     messages.success(request, "Konto gelöscht.")
-    return redirect("landing")
+    return redirect("login")
 
 
 @login_required
