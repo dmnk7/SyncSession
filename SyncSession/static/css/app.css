@@ -116,6 +116,53 @@ h2 {
 .group-list a {
   color: var(--accent);
   font-weight: 600;
+  text-decoration: none;
+}
+
+.upcoming-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.upcoming-list li {
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.upcoming-list li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.upcoming-list a {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.upcoming-title {
+  display: block;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.upcoming-list a:hover .upcoming-title {
+  text-decoration: underline;
+}
+
+.upcoming-when {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.upcoming-meta {
+  display: block;
+  margin-top: 0.1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 
 .checkbox-row {

@@ -5,10 +5,19 @@ from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
+from kalender.feed import upcoming_accepted_for_user
 from lerngruppen.forms import GroupCreateForm
 from lerngruppen.models import LearningGroup
 
 from .forms import AccountDeleteForm, ProfileForm, SignUpForm
+
+
+def home_context(user, form=None):
+    return {
+        "form": form or GroupCreateForm(),
+        "groups": LearningGroup.for_member(user),
+        "upcoming": upcoming_accepted_for_user(user),
+    }
 
 
 def _safe_next(request):
@@ -87,10 +96,6 @@ def delete_account(request):
 
 @login_required
 def home(request):
-    response = render(
-        request,
-        "accounts/home.html",
-        {"form": GroupCreateForm(), "groups": LearningGroup.for_member(request.user)},
-    )
+    response = render(request, "accounts/home.html", home_context(request.user))
     response["Cache-Control"] = "no-store"
     return response

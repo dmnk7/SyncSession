@@ -10,6 +10,33 @@
   </section>
 
   <section class="card">
+    <h2>Nächste Termine</h2>
+    {% if upcoming %}
+      <ul class="upcoming-list">
+        {% for item in upcoming %}
+          <li>
+            <a href="{% url 'group_calendar' item.group.pk %}">
+              <span class="upcoming-title">{{ item.session.title }}</span>
+              <span class="upcoming-when">
+                {% if item.start.date == item.end.date %}
+                  {{ item.start|date:"l, d.m.Y, H:i" }}–{{ item.end|date:"H:i" }} Uhr
+                {% else %}
+                  {{ item.start|date:"l, d.m.Y, H:i" }} – {{ item.end|date:"l, d.m.Y, H:i" }} Uhr
+                {% endif %}
+              </span>
+              <span class="upcoming-meta">
+                {% if item.session.location %}{{ item.session.location }} · {% endif %}{{ item.group.name }}
+              </span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Es stehen keine angenommenen Termine an.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
     <h2>Neue Lerngruppe</h2>
     <form method="post" action="{% url 'create_group' %}">
       {% csrf_token %}

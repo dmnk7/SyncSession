@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import urlencode
 
+from accounts.views import home_context
 from kalender.models import Attendance, Session
 
 from .forms import GroupCreateForm, InviteSettingsForm
@@ -102,11 +103,10 @@ def create_group(request):
         messages.success(request, f"Lerngruppe „{group.name}“ erstellt.")
         return redirect("group_calendar", pk=group.pk)
 
-    groups = LearningGroup.for_member(request.user)
     return render(
         request,
         "accounts/home.html",
-        {"form": form, "groups": groups},
+        home_context(request.user, form=form),
     )
 
 

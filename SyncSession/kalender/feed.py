@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import timedelta, timezone as datetime_timezone
 
 from django.http import HttpResponse
@@ -6,10 +7,12 @@ from django.utils import timezone
 from icalendar import Calendar, Event
 from icalendar.prop import vDuration, vText
 
-from lerngruppen.models import LearningGroup
+from lerngruppen.models import LearningGroup, Membership
 
-from .models import Session
+from .models import STATUS_ABGESAGT, Session
 from .views import _consensus_range, _member_ids_for_session, _reply_tally
+
+UPCOMING_LIMIT = 3
 
 
 def accepted_bounds(session, memberships, attendances):
@@ -32,6 +35,69 @@ def accepted_bounds(session, memberships, attendances):
     if reply_state != "angenommen":
         return None
     return _consensus_range(session, member_ids, by_user)
+
+
+def upcoming_accepted_for_user(user):
+    """Nächste angenommene Termine über alle Lerngruppen des Nutzers.
+
+    Geblockte, offene, abgesagte und bereits beendete Termine bleiben
+    draußen. Pro Gruppe können mehrere Termine vorkommen; gezeigt werden
+    die nächsten drei nach Beginn. Wer selbst abgesagt hat, muss nicht
+    erscheinen und sieht den Termin nicht.
+    """
+    now = timezone.now()
+    sessions = list(
+        Session.objects.filter(
+            group__memberships__user=user,
+            kind=Session.KIND_VORSCHLAG,
+            end__gt=now,
+        )
+        .select_related("group", "created_by")
+        .prefetch_related("attendances")
+        .distinct()
+        .order_by("start")
+    )
+    if not sessions:
+        return []
+
+    memberships_by_group = defaultdict(list)
+    for membership in Membership.objects.filter(
+        group_id__in={session.group_id for session in sessions}
+    ):
+        memberships_by_group[membership.group_id].append(membership)
+
+    upcoming = []
+    for session in sessions:
+        attendances = list(session.attendances.all())
+        bounds = accepted_bounds(
+            session, memberships_by_group[session.group_id], attendances
+        )
+        if bounds is None:
+            continue
+        own = next(
+            (
+                attendance
+                for attendance in attendances
+                if attendance.user_id == user.id
+            ),
+            None,
+        )
+        if own is not None and own.status == STATUS_ABGESAGT:
+            continue
+        start, end = bounds
+        if end <= now:
+            continue
+        upcoming.append(
+            {
+                "session": session,
+                "group": session.group,
+                "start": timezone.localtime(start),
+                "end": timezone.localtime(end),
+            }
+        )
+        if len(upcoming) >= UPCOMING_LIMIT:
+            break
+    return upcoming
 
 
 def _as_utc(moment):
