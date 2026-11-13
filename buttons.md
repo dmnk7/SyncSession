@@ -48,3 +48,7 @@ Beispiele: „Teilweise" im Termin-Dialog. „Zusagen" ist dagegen Primary, „A
 ## Termin-Dialog
 
 Zwei Modi: Der Ersteller sieht die bearbeitbaren Felder mit „Löschen" (Danger), „Abbrechen" (Secondary) und „Speichern" (Primary) — der Teilnahme-Bereich ist ihm verborgen, weil er implizit zusagt. Alle anderen sehen read-only-Felder, nur „Schließen" (Secondary) und den Teilnahme-Bereich mit „Zusagen" (Primary), „Teilweise" (Secondary), „Absagen" (Danger).
+
+Öffnet man „Teilweise", klappt der Zeitraum auf: „Zusagen" und „Absagen" fallen auf neutral zurück, „Teilweise" ist als ausgewählt markiert (dunkelgrau), und „Teil-Zusage speichern" (Primary) liegt in der unteren Aktionsreihe neben „Schließen" — es ist dann der einzige farbige Button im Dialog.
+
+Ziehen im Kalender darf nicht über Mitternacht hinaus gehen (`selectAllow`); Beginn/Ende sind reine Zeitfelder neben einem Datumsfeld, Ende vor Beginn bedeutet automatisch nächster Tag.

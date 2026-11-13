@@ -21,6 +21,7 @@
 
   const titleInput = document.getElementById("session-title");
   const locationInput = document.getElementById("session-location");
+  const dateInput = document.getElementById("session-date");
   const startInput = document.getElementById("session-start");
   const endInput = document.getElementById("session-end");
   const cancelButton = document.getElementById("session-cancel");
@@ -65,22 +66,28 @@
     return String(value).padStart(2, "0");
   }
 
-  function formatLocal(date) {
+  function formatDate(date) {
     return (
       date.getFullYear() +
       "-" +
       pad(date.getMonth() + 1) +
       "-" +
-      pad(date.getDate()) +
-      "T" +
-      pad(date.getHours()) +
-      ":" +
-      pad(date.getMinutes())
+      pad(date.getDate())
     );
   }
 
   function formatTime(date) {
     return pad(date.getHours()) + ":" + pad(date.getMinutes());
+  }
+
+  function composeDateTime(dateValue, timeValue) {
+    return new Date(dateValue + "T" + timeValue);
+  }
+
+  function endOfDay(date) {
+    const day = new Date(date);
+    day.setHours(24, 0, 0, 0);
+    return day;
   }
 
   function setStatus(message, isError) {
@@ -118,7 +125,7 @@
   }
 
   function setFieldsEnabled(enabled) {
-    [titleInput, locationInput, startInput, endInput].forEach(function (input) {
+    [titleInput, locationInput, dateInput, startInput, endInput].forEach(function (input) {
       input.disabled = !enabled;
     });
     submitButton.disabled = !enabled;
@@ -128,6 +135,15 @@
     deleteArmed = false;
     deleteButton.textContent = "Löschen";
     deleteButton.hidden = true;
+  }
+
+  function resetAttendanceButtons() {
+    acceptFullButton.classList.add("primary");
+    acceptPartialButton.classList.add("secondary");
+    acceptPartialButton.classList.remove("selected");
+    declineButton.classList.add("danger");
+    attendanceRange.hidden = true;
+    attendanceSaveButton.hidden = true;
   }
 
   function applyKindUi() {
@@ -270,14 +286,15 @@
     readonlyEl.hidden = true;
     attendanceSection.hidden = true;
     attendanceList.hidden = true;
-    attendanceRange.hidden = true;
+    resetAttendanceButtons();
     resolutionSection.hidden = true;
     setFieldsEnabled(true);
     submitButton.hidden = false;
     cancelButton.textContent = "Abbrechen";
     submitButton.textContent = "Erstellen";
-    startInput.value = formatLocal(selection.start);
-    endInput.value = formatLocal(selection.end);
+    dateInput.value = formatDate(selection.start);
+    startInput.value = formatTime(selection.start);
+    endInput.value = formatTime(selection.end);
     setStatus("", false);
     dialog.showModal();
     titleInput.focus();
@@ -301,8 +318,9 @@
     titleInput.value = event.title;
     locationInput.value = props.location || "";
     locationRow.hidden = isBlock;
-    startInput.value = formatLocal(sessionStart);
-    endInput.value = formatLocal(sessionEnd);
+    dateInput.value = formatDate(sessionStart);
+    startInput.value = formatTime(sessionStart);
+    endInput.value = formatTime(sessionEnd);
 
     dialogTitle.textContent = isBlock ? "Geblockte Zeit" : "Terminvorschlag";
 
@@ -318,7 +336,7 @@
       setFieldsEnabled(false);
     }
 
-    attendanceRange.hidden = true;
+    resetAttendanceButtons();
     if (!isBlock) {
       attendanceSection.hidden = own;
       const locked = sessionIsPast(props.session_start);
@@ -347,6 +365,12 @@
 
   async function persistMove(info) {
     const event = info.event;
+    const end = event.end || event.start;
+    if (end > endOfDay(event.start)) {
+      info.revert();
+      setStatus("Termine können nicht über Mitternacht hinaus gehen.", true);
+      return;
+    }
     const payload = {
       title: event.title,
       location: event.extendedProps.location || "",
@@ -432,6 +456,10 @@
     dayMaxEventRows: true,
     selectable: true,
     selectMirror: true,
+    selectAllow: function (info) {
+      // Ziehen darf nicht über Mitternacht hinaus in den nächsten Tag gehen.
+      return info.allDay || info.end <= endOfDay(info.start);
+    },
     editable: true,
     events: {
       url: container.dataset.sessionsUrl,
@@ -533,10 +561,22 @@
     if (editingEvent && !editingEvent.extendedProps.own) {
       return;
     }
-    const startDate = new Date(startInput.value);
-    const endDate = new Date(endInput.value);
+    if (!dateInput.value) {
+      setStatus("Bitte gib ein Datum an.", true);
+      return;
+    }
+    const startDate = composeDateTime(dateInput.value, startInput.value);
+    const endDate = composeDateTime(dateInput.value, endInput.value);
     if (isNaN(startDate) || isNaN(endDate)) {
       setStatus("Bitte gib Beginn und Ende an.", true);
+      return;
+    }
+    if (endDate < startDate) {
+      // Ende vor Beginn am selben Tag heißt: Der Termin geht über Mitternacht.
+      endDate.setDate(endDate.getDate() + 1);
+    }
+    if (endDate <= startDate) {
+      setStatus("Das Ende muss nach dem Beginn liegen.", true);
       return;
     }
     const isBlock = kindBlockiert.checked;
@@ -592,6 +632,7 @@
       event.extendedProps.my_attendance = attendance;
       renderAttendance(event, props);
       attendanceRange.hidden = true;
+      attendanceSaveButton.hidden = true;
       dialog.close();
       calendar.refetchEvents();
       setStatus("Zusage gespeichert.", false);
@@ -606,15 +647,29 @@
     }
     const event = editingEvent;
     const props = event.extendedProps;
-    const sessionStart = formatLocal(new Date(props.session_start));
-    const sessionEnd = formatLocal(new Date(props.session_end));
-    attendanceStart.min = sessionStart;
-    attendanceStart.max = sessionEnd;
-    attendanceEnd.min = sessionStart;
-    attendanceEnd.max = sessionEnd;
-    attendanceStart.value = sessionStart;
-    attendanceEnd.value = sessionEnd;
+    const sessionStartDate = new Date(props.session_start);
+    const sessionEndDate = new Date(props.session_end);
+    const startTime = formatTime(sessionStartDate);
+    const endTime = formatTime(sessionEndDate);
+    if (formatDate(sessionStartDate) === formatDate(sessionEndDate)) {
+      attendanceStart.min = startTime;
+      attendanceStart.max = endTime;
+      attendanceEnd.min = startTime;
+      attendanceEnd.max = endTime;
+    } else {
+      attendanceStart.removeAttribute("min");
+      attendanceStart.removeAttribute("max");
+      attendanceEnd.removeAttribute("min");
+      attendanceEnd.removeAttribute("max");
+    }
+    attendanceStart.value = startTime;
+    attendanceEnd.value = endTime;
     attendanceRange.hidden = false;
+    acceptFullButton.classList.remove("primary");
+    acceptPartialButton.classList.remove("secondary");
+    acceptPartialButton.classList.add("selected");
+    declineButton.classList.remove("danger");
+    attendanceSaveButton.hidden = false;
     attendanceStart.focus();
   });
 
@@ -623,8 +678,19 @@
       return;
     }
     const event = editingEvent;
-    const start = new Date(attendanceStart.value);
-    const end = new Date(attendanceEnd.value);
+    const sessionDay = formatDate(new Date(event.extendedProps.session_start));
+    const sessionStart = composeDateTime(
+      sessionDay,
+      formatTime(new Date(event.extendedProps.session_start))
+    );
+    const start = composeDateTime(sessionDay, attendanceStart.value);
+    const end = composeDateTime(sessionDay, attendanceEnd.value);
+    if (start < sessionStart) {
+      start.setDate(start.getDate() + 1);
+    }
+    if (end < sessionStart) {
+      end.setDate(end.getDate() + 1);
+    }
     if (isNaN(start) || isNaN(end) || end <= start) {
       setStatus(
         "Die Teil-Zusage braucht einen gültigen Zeitraum innerhalb des Termins.",
@@ -641,6 +707,7 @@
       event.extendedProps.my_attendance = attendance;
       renderAttendance(event, event.extendedProps);
       attendanceRange.hidden = true;
+      attendanceSaveButton.hidden = true;
       dialog.close();
       calendar.refetchEvents();
       setStatus("Teil-Zusage gespeichert.", false);
@@ -661,6 +728,7 @@
       event.extendedProps.my_attendance = attendance;
       renderAttendance(event, event.extendedProps);
       attendanceRange.hidden = true;
+      attendanceSaveButton.hidden = true;
       dialog.close();
       calendar.refetchEvents();
       setStatus("Absage gespeichert.", false);

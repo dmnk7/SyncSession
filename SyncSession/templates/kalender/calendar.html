@@ -57,13 +57,19 @@
           <input id="session-location" name="location" type="text" maxlength="120" placeholder="z. B. Online oder Raum">
         </p>
         <p>
-          <label for="session-start">Beginn</label>
-          <input id="session-start" type="datetime-local" step="900" required>
+          <label for="session-date">Datum</label>
+          <input id="session-date" type="date" required>
         </p>
-        <p>
-          <label for="session-end">Ende</label>
-          <input id="session-end" type="datetime-local" step="900" required>
-        </p>
+        <div class="form-row">
+          <p>
+            <label for="session-start">Beginn</label>
+            <input id="session-start" type="time" step="900" required>
+          </p>
+          <p>
+            <label for="session-end">Ende</label>
+            <input id="session-end" type="time" step="900" required>
+          </p>
+        </div>
         <p id="repeat-row" hidden>
           <label for="session-repeat">Wöchentlich wiederholen (Wochen)</label>
           <input id="session-repeat" type="number" min="1" max="26" value="1">
@@ -79,15 +85,16 @@
             <button type="button" id="decline" class="danger">Absagen</button>
           </div>
           <div id="attendance-range" hidden>
-            <p>
-              <label for="attendance-start">Zusage von</label>
-              <input id="attendance-start" type="datetime-local" step="900">
-            </p>
-            <p>
-              <label for="attendance-end">bis</label>
-              <input id="attendance-end" type="datetime-local" step="900">
-            </p>
-            <button type="button" id="attendance-save">Teil-Zusage speichern</button>
+            <div class="form-row">
+              <p>
+                <label for="attendance-start">Zusage von</label>
+                <input id="attendance-start" type="time" step="900">
+              </p>
+              <p>
+                <label for="attendance-end">bis</label>
+                <input id="attendance-end" type="time" step="900">
+              </p>
+            </div>
           </div>
         </div>
         <p class="hint" id="attendance-list" hidden></p>
@@ -105,6 +112,7 @@
 
         <div class="session-actions">
           <button type="button" class="secondary" id="session-cancel">Abbrechen</button>
+          <button type="button" id="attendance-save" hidden>Teil-Zusage speichern</button>
           <button type="button" class="danger" id="session-delete" hidden>Löschen</button>
           <button type="submit" id="session-submit">Speichern</button>
         </div>
@@ -114,5 +122,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/de.global.min.js"></script>
-  <script src="{% static 'js/kalender.js' %}?v=6"></script>
+  <script src="{% static 'js/kalender.js' %}?v=10"></script>
 {% endblock %}

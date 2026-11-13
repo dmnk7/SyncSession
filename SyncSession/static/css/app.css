@@ -340,6 +340,16 @@ form p {
   margin: 0.85rem 0;
 }
 
+.form-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.form-row > p {
+  flex: 1;
+  min-width: 0;
+}
+
 label {
   display: block;
   margin-bottom: 0.3rem;
@@ -898,6 +908,12 @@ button[type="submit"].remove-member {
   background: #dbe2e8;
 }
 
+.attendance-actions button.selected {
+  border: 0;
+  background: #dbe2e8;
+  color: var(--text);
+}
+
 .attendance-actions button.danger {
   border-color: var(--danger);
   color: var(--danger);
@@ -912,19 +928,6 @@ button[type="submit"].remove-member {
   color: var(--muted);
   cursor: default;
   pointer-events: none;
-}
-
-#attendance-range button {
-  width: 100%;
-  margin-top: 0.25rem;
-  padding: 0.6rem 0.9rem;
-  border: 0;
-  border-radius: var(--radius);
-  background: var(--accent);
-  color: #fff;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
 }
 
 #attendance-list {
