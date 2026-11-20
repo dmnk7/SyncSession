@@ -1028,8 +1028,14 @@ class CalendarFeedTests(CalendarTestCase):
         response = self.login(self.member).get(
             f"/gruppen/{self.group.pk}/einstellungen/"
         )
+        feed_path = f"/abo/{self.group.calendar_token}.ics"
         self.assertContains(response, f"webcal://")
-        self.assertContains(response, f"/abo/{self.group.calendar_token}.ics")
+        self.assertContains(response, f"http://testserver{feed_path}")
+        self.assertContains(response, feed_path)
+        self.assertContains(response, 'data-abo="webcal"')
+        self.assertContains(response, 'data-abo="https"')
+        self.assertContains(response, "iPhone und Mac")
+        self.assertContains(response, "Android und Browser")
         self.assertContains(response, "<svg")
         self.assertNotContains(response, "Google")
         self.assertNotContains(response, "Apple")

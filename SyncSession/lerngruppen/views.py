@@ -122,6 +122,7 @@ def group_settings(request, pk):
         request, reverse("calendar_feed", args=[group.calendar_token])
     )
     calendar_webcal_url = _webcal_url(calendar_https_url)
+    calendar_http_scheme = urlsplit(calendar_https_url).scheme
     can_invite = group.user_can_invite(request.user)
     invite = None
     join_url = ""
@@ -147,8 +148,11 @@ def group_settings(request, pk):
             "invite": invite,
             "join_url": join_url,
             "qr_svg": qr_svg,
-            "calendar_url": calendar_webcal_url,
-            "calendar_qr_svg": _qr_svg(calendar_webcal_url),
+            "calendar_webcal_url": calendar_webcal_url,
+            "calendar_http_url": calendar_https_url,
+            "calendar_http_scheme": calendar_http_scheme,
+            "calendar_webcal_qr_svg": _qr_svg(calendar_webcal_url),
+            "calendar_http_qr_svg": _qr_svg(calendar_https_url),
         },
     )
 

@@ -234,6 +234,62 @@ button.remove-member {
   white-space: nowrap;
 }
 
+.abo-switch {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  margin: 0 0 0.85rem;
+  background: var(--surface);
+  border-radius: 7px;
+}
+
+.abo-switch button {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12rem;
+  width: auto;
+  margin: 0;
+  padding: 0.5rem 0.55rem 0.45rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  line-height: 1.15;
+  cursor: pointer;
+}
+
+.abo-format {
+  font-weight: 600;
+}
+
+.abo-for {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.abo-switch button:hover {
+  color: var(--accent);
+}
+
+.abo-switch button:hover .abo-for {
+  color: var(--accent);
+}
+
+.abo-switch button.is-active,
+.abo-switch button.is-active:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.abo-switch button.is-active .abo-for,
+.abo-switch button.is-active:hover .abo-for {
+  color: #fff;
+}
+
 .qr-wrap {
   display: flex;
   justify-content: center;

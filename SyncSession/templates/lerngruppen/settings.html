@@ -53,13 +53,26 @@
 
   <section class="card">
     <h2>Kalender abonnieren</h2>
+    <div class="abo-switch" role="group" aria-label="Abo-Format">
+      <button type="button" class="is-active" data-abo="webcal" aria-pressed="true">
+        <span class="abo-format">webcal</span>
+        <span class="abo-for">iPhone und Mac</span>
+      </button>
+      <button type="button" data-abo="https" aria-pressed="false">
+        <span class="abo-format">{{ calendar_http_scheme }}</span>
+        <span class="abo-for">Android und Browser</span>
+      </button>
+    </div>
     <div class="link-row">
-      <input id="calendar-url" type="text" value="{{ calendar_url }}" readonly>
+      <input id="calendar-url" type="text" value="{{ calendar_webcal_url }}" data-webcal="{{ calendar_webcal_url }}" data-https="{{ calendar_http_url }}" readonly>
       <button type="button" class="copy-button" data-copy="calendar-url">Kopieren</button>
     </div>
     <div class="qr-wrap">
-      <div class="qr">
-        {{ calendar_qr_svg|safe }}
+      <div class="qr" data-abo-qr="webcal">
+        {{ calendar_webcal_qr_svg|safe }}
+      </div>
+      <div class="qr" data-abo-qr="https" hidden>
+        {{ calendar_http_qr_svg|safe }}
       </div>
     </div>
   </section>
@@ -157,5 +170,30 @@
         setTimeout(function () { button.textContent = "Kopieren"; }, 1500);
       });
     });
+
+    (function () {
+      const input = document.getElementById("calendar-url");
+      const buttons = document.querySelectorAll(".abo-switch [data-abo]");
+      if (!input || !buttons.length) return;
+
+      function choose(kind) {
+        const url = input.getAttribute("data-" + kind);
+        if (url) input.value = url;
+        buttons.forEach(function (button) {
+          const active = button.getAttribute("data-abo") === kind;
+          button.classList.toggle("is-active", active);
+          button.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+        document.querySelectorAll("[data-abo-qr]").forEach(function (qr) {
+          qr.hidden = qr.getAttribute("data-abo-qr") !== kind;
+        });
+      }
+
+      buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          choose(button.getAttribute("data-abo"));
+        });
+      });
+    })();
   </script>
 {% endblock %}
